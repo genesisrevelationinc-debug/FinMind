@@ -38,32 +38,27 @@ flowchart LR
   API -->|Cache| RD
   API -->|JWT verify| JWT
   API -->|reminder jobs| SCH
-  SCH --> TW
-  SCH --> SMTP
-    JWT[PyJWT]
-    AI[Insights Service]
-    SCH[Scheduler/APScheduler]
-    SCH -->|Job Store| RD
-    SCH -->|Executors| RD
-    SCH -->|Logging| API
+    API -->|reminder jobs| SCH
+    SCH --> TW
+    SCH --> SMTP
+    SCH -->|Background Scheduler| RD
+    SCH -->|Logging| STDOUT
   end
-
-  subgraph Monitoring
-    MON[APScheduler Monitoring]
-  end
-
-  SCH --> MON
 
   subgraph Data
     PG[(PostgreSQL)]
-- refresh_tokens (optional if rotating), audit_logs
     RD[(Redis)]
+    RD -->|Job Storage| SCH
+    RD -->|Caching| API
+    RD -->|Rate Limiting| API
   end
+- refresh_tokens (optional if rotating), audit_logs
 
-  MON -->|Monitor Jobs| RD
-
-  subgraph ThirdParty
-    TW[Twilio WhatsApp]
+## Redis Caching Policy
+- Keys
+  - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
+  - `user:{id}:categories` — 24h TTL
+  - `user:{id}:upcoming_bills` — 15 min TTL
   - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
 - Invalidation
   - On expense/bill create/update/delete -> delete affected monthly_summary, upcoming_bills, insights
