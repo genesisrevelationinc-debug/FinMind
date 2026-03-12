@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  backend:
+    build:
+      context: ../backend
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://user:password@db/finmind
+      - JWT_SECRET_KEY=super-secret
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+volumes:
+  redis-data:
