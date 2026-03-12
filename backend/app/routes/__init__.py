@@ -10,7 +10,7 @@ def register_routes(app):
     app.register_blueprint(insights.bp)
 
     # Example job registration
-    @scheduler.scheduled_job('interval', id='reminder_job', minutes=15)
-    def scheduled_reminder_job():
-        app.logger.info('Running scheduled reminder job...')
-        # Logic to send reminders
+    @scheduler.scheduled_job('interval', id='reminder_job', minutes=1)
+    def reminder_job():
+        app.logger.info("Running reminder job...")
+        # Add job logic here
