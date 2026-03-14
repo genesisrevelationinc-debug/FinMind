@@ -1,17 +1,17 @@
 from flask import Flask
-from .extensions import db, init_app
+from .config import Config
+from .extensions import db
 from .routes import api_bp
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_object('config.Config')
+    app.config.from_object(config_class)
 
-    init_app(app)
+    db.init_app(app)
 
     app.register_blueprint(api_bp)
 
-    return app
+    with app.app_context():
+        db.create_all()
 
-if __name__ == '__main__':
-    app = create_app()
-    app.run(debug=True)
+    return app
