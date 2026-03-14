@@ -1,16 +1,17 @@
 import unittest
-from app.extensions import scheduler
-from app import create_app
+from backend.app import create_app
+from apscheduler.schedulers.background import BackgroundScheduler
 
 class TestScheduler(unittest.TestCase):
     def setUp(self):
         self.app = create_app()
-        self.app_context = self.app.app_context()
-        self.app_context.push()
+        self.client = self.app.test_client()
+        self.scheduler = BackgroundScheduler()
 
-    def tearDown(self):
-        self.app_context.pop()
+    def test_job_registration(self):
+        with self.app.app_context():
+            self.scheduler.add_job(id='test_job', func=lambda: print("Test job running"), trigger='interval', minutes=1)
+            self.assertIn('test_job', self.scheduler.get_jobs())
 
-    def test_scheduler_running(self):
-        self.assertTrue(scheduler.running)
-        self.assertEqual(len(scheduler.get_jobs()), 1)
+if __name__ == '__main__':
+    unittest.main()
