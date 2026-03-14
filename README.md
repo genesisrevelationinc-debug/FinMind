@@ -40,20 +40,18 @@ flowchart LR
   API -->|reminder jobs| SCH
   SCH --> TW
   SCH --> SMTP
+  AI --> OAI
+```
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
 - Expenses: CRUD `/expenses`
 - Bills: CRUD `/bills`, pay/mark `/bills/{id}/pay`
 - Reminders: CRUD `/reminders`, trigger `/reminders/run`
 - Insights: `/insights/monthly`, `/insights/budget-suggestion`
-- Insights: `/insights/weekly` (new)
-
-## Weekly Financial Summary
-Generates weekly summaries highlighting trends and insights.
+- Weekly Summary: `/insights/weekly`
 
 ## MVP UI/UX Plan
 - Auth screens: register/login.
-- ad_impressions, subscription_plans, user_subscriptions
-- refresh_tokens (optional if rotating), audit_logs
+- Dashboard:
 
 ## Redis Caching Policy
 - Keys
