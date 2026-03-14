@@ -1,30 +1,34 @@
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, Expense, Bill
+from ..extensions import db
+from ..models import Expense, Bill
 from datetime import datetime, timedelta
 
 bp = Blueprint('insights', __name__, url_prefix='/insights')
 
 @bp.route('/weekly', methods=['GET'])
-@jwt_required()
 def weekly_summary():
-    user_id = get_jwt_identity()
-    start_of_week = datetime.utcnow() - timedelta(days=datetime.utcnow().weekday(), hours=datetime.utcnow().hour, minutes=datetime.utcnow().minute, seconds=datetime.utcnow().second, microseconds=datetime.utcnow().microsecond)
-    end_of_week = start_of_week + timedelta(days=6, hours=23, minutes=59, seconds=59, microseconds=999999)
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=7)
 
-    expenses = Expense.query.filter_by(user_id=user_id).filter(Expense.date >= start_of_week, Expense.date <= end_of_week).all()
-    bills = Bill.query.filter_by(user_id=user_id).filter(Bill.due_date >= start_of_week, Bill.due_date <= end_of_week).all()
+    expenses = Expense.query.filter(Expense.date >= start_date, Expense.date <= end_date).all()
+    bills = Bill.query.filter(Bill.due_date >= start_date, Bill.due_date <= end_date).all()
 
     total_expenses = sum(expense.amount for expense in expenses)
     total_bills = sum(bill.amount for bill in bills)
 
+    expense_categories = {}
+    for expense in expenses:
+        if expense.category in expense_categories:
+            expense_categories[expense.category] += expense.amount
+        else:
+            expense_categories[expense.category] = expense.amount
+
     summary = {
-        'start_of_week': start_of_week.isoformat(),
-        'end_of_week': end_of_week.isoformat(),
+        'start_date': start_date.isoformat(),
+        'end_date': end_date.isoformat(),
         'total_expenses': total_expenses,
         'total_bills': total_bills,
-        'expenses': [{'id': expense.id, 'amount': expense.amount, 'category': expense.category, 'date': expense.date.isoformat()} for expense in expenses],
-        'bills': [{'id': bill.id, 'name': bill.name, 'amount': bill.amount, 'due_date': bill.due_date.isoformat()} for bill in bills]
+        'expense_categories': expense_categories
     }
 
-    return jsonify(summary), 200
+    return jsonify(summary)
