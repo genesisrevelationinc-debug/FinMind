@@ -3,50 +3,14 @@ info:
   title: FinMind API
   version: 1.0.0
 paths:
-  /auth/register:
-    post:
-      summary: Register a new user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                email:
-                  type: string
-                password:
-                  type: string
-      responses:
-        '201':
-          description: User registered successfully
-  /auth/login:
-    post:
-      summary: Login a user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
-      responses:
-        '200':
-          description: User logged in successfully
   /api/dashboard/overview:
     get:
-      summary: Get financial overview for the user
+      summary: Get financial overview for multiple accounts
       security:
-        - BearerAuth: []
+        - jwt: []
       responses:
         '200':
-          description: Financial overview
+          description: A JSON object containing the financial overview
           content:
             application/json:
               schema:
@@ -69,9 +33,3 @@ paths:
                           type: number
                         bills:
                           type: number
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
