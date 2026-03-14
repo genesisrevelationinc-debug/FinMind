@@ -10,5 +10,7 @@ def create_app():
 
     db.init_app(app)
     JWTManager(app)
+
     app.register_blueprint(api_bp)
+
     return app
