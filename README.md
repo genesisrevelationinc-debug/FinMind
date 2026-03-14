@@ -42,6 +42,9 @@ flowchart LR
   SCH --> SMTP
   AI --> OAI
 ```
+
+## PostgreSQL Schema (DDL)
+See `backend/app/db/schema.sql`. Key tables:
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
 - Expenses: CRUD `/expenses`
 - Bills: CRUD `/bills`, pay/mark `/bills/{id}/pay`
@@ -52,9 +55,8 @@ flowchart LR
 ## MVP UI/UX Plan
 - Auth screens: register/login.
 - Dashboard:
-
-## Redis Caching Policy
-- Keys
+  - Monthly spend chart, category breakdown donut.
+  - Upcoming bills list with due dates and pay status.
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
   - `user:{id}:categories` — 24h TTL
   - `user:{id}:upcoming_bills` — 15 min TTL
