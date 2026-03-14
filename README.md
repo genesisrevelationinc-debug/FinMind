@@ -41,10 +41,15 @@ flowchart LR
   SCH --> TW
   SCH --> SMTP
   AI --> OAI
-```
+SCH --> TW
+SCH --> SMTP
+AI --> OAI
 
-## PostgreSQL Schema (DDL)
-See `backend/app/db/schema.sql`. Key tables:
+## Multi-account Financial Overview Dashboard
+- Endpoint: `/api/dashboard/overview`
+- Description: Provides a summary of financial data across multiple accounts.
+- Authentication: Requires JWT token.
+
 - users, categories, expenses, bills, reminders
 - ad_impressions, subscription_plans, user_subscriptions
 - refresh_tokens (optional if rotating), audit_logs
