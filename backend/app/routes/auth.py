@@ -1,1 +1,1 @@
-# Placeholder for auth routes
+# Placeholder for authentication routes
