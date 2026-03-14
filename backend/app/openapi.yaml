@@ -1,0 +1,32 @@
+openapi: 3.0.0
+info:
+  title: FinMind API
+  version: 1.0.0
+paths:
+  /insights/weekly:
+    get:
+      summary: Get weekly financial summary
+      responses:
+        '200':
+          description: A JSON object containing the weekly financial summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  start_date:
+                    type: string
+                  end_date:
+                    type: string
+                  total_expenses:
+                    type: number
+                  total_bills:
+                    type: number
+                  expenses:
+                    type: array
+                    items:
+                      type: object
+                  bills:
+                    type: array
+                    items:
+                      type: object
