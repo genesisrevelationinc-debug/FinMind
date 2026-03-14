@@ -58,14 +58,14 @@ flowchart LR
   subgraph ThirdParty
 - Keys
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
-    OAI[OpenAI or Local ML]
+  - `user:{id}:categories` — 24h TTL
   end
 
-  RED -->|Job Store| SCH
   A -->|HTTPS| CDN --> API
+  API -->|Job Queue| RED
   API -->|ORM| PG
   API -->|Cache| RD
-
+  API -->|JWT verify| JWT
 ## API Endpoints
 OpenAPI: `backend/app/openapi.yaml`
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
