@@ -47,26 +47,20 @@ flowchart LR
 See `backend/app/db/schema.sql`. Key tables:
 - users, categories, expenses, bills, reminders
 - ad_impressions, subscription_plans, user_subscriptions
-- refresh_tokens (optional if rotating), audit_logs
+- Reminders: CRUD `/reminders`, trigger `/reminders/run`
+- Insights: `/insights/monthly`, `/insights/budget-suggestion`
 
-## Redis Caching Policy
-- Keys
-  - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
-  - `user:{id}:categories` — 24h TTL
-- Payments stubbed; swap in Stripe when moving off free tier.
+- **Dashboard:**
+  - Multi-account financial overview `/api/dashboard/overview`
 
-## Organic Marketing Strategies
-- Content: budgeting tips, “FinMind monthly challenge” on socials.
-- SEO: landing with calculators (50/30/20, debt snowball), schema markup.
-- Communities: Reddit PF, indie hackers build-in-public.
-- Referral: give 1 month premium for inviting 3 friends.
-
-## Multi-Account Financial Overview Dashboard
-- Support viewing multiple financial accounts in one view.
-- API endpoint: `/api/dashboard/overview`
-- Authentication required.
-
-## Project Structure
+## MVP UI/UX Plan
+- Auth screens: register/login.
+- Dashboard:
+  - `user:{id}:upcoming_bills` — 15 min TTL
+  - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
+- Invalidation
+  - On expense/bill create/update/delete -> delete affected monthly_summary, upcoming_bills, insights
+- Rate limiting (optional): `rl:{userId}:{endpoint}:{minute}` with short TTL
 
 ## API Endpoints
 OpenAPI: `backend/app/openapi.yaml`
