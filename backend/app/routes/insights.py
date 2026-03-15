@@ -33,4 +33,4 @@ def weekly_summary():
         "bills": [{"id": bill.id, "amount": bill.amount, "name": bill.name, "due_date": bill.due_date.isoformat()} for bill in weekly_bills]
     }
 
-    return jsonify(summary)
+    return jsonify(summary), 200
