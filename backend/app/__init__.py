@@ -1,10 +1,13 @@
 from flask import Flask
-from .extensions import db, jwt, scheduler
-from .routes import register_routes
+from .config import Config
+from .extensions import db, jwt, init_extensions
+from .routes import api_bp, setup_scheduler
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_object('backend.app.config.Config')
     init_extensions(app)
-    register_routes(app)
+
+    app.register_blueprint(api_bp, url_prefix='/api')
+    setup_scheduler()
+
     return app
