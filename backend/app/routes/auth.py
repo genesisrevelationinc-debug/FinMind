@@ -1,12 +1,11 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.models import User, db, AuditLog
-from werkzeug.security import generate_password_hash, check_password_hash
-import jwt
-import datetime
-    return jsonify({"msg": "Bad username or password"}), 401
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from ..models import User, db
+from ..extensions import audit_log
+auth_bp = Blueprint('auth', __name__)
+    return jsonify(access_token=access_token), 200
 
-@auth.route('/export-data', methods=['GET'])
+@auth_bp.route('/export_data', methods=['GET'])
 @jwt_required()
 def export_data():
     user_id = get_jwt_identity()
@@ -17,22 +16,18 @@ def export_data():
     # Export user data
     user_data = {
         "id": user.id,
-        "username": user.username,
         "email": user.email,
+        "name": user.name,
         "expenses": [expense.to_dict() for expense in user.expenses],
         "bills": [bill.to_dict() for bill in user.bills],
         "reminders": [reminder.to_dict() for reminder in user.reminders]
     }
 
-    # Log audit trail
-    audit_log = AuditLog(user_id=user_id, action="export_data")
-    db.session.add(audit_log)
-    db.session.commit()
-
+    audit_log.info(f"User {user_id} exported their data.")
     return jsonify(user_data), 200
 
 
-@auth.route('/delete-data', methods=['DELETE'])
+@auth_bp.route('/delete_data', methods=['DELETE'])
 @jwt_required()
 def delete_data():
     user_id = get_jwt_identity()
@@ -44,9 +39,5 @@ def delete_data():
     db.session.delete(user)
     db.session.commit()
 
-    # Log audit trail
-    audit_log = AuditLog(user_id=user_id, action="delete_data")
-    db.session.add(audit_log)
-    db.session.commit()
-
+    audit_log.info(f"User {user_id} permanently deleted their data.")
     return jsonify({"msg": "Data deleted successfully"}), 200
