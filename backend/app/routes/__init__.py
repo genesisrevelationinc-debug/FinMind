@@ -1,11 +1,5 @@
 from flask import Blueprint
-from . import auth, expenses, bills, reminders, insights, savings_goals
-
-api_bp = Blueprint('api', __name__)
-
-api_bp.register_blueprint(auth.bp, url_prefix='/auth')
-api_bp.register_blueprint(expenses.bp, url_prefix='/expenses')
-api_bp.register_blueprint(bills.bp, url_prefix='/bills')
-api_bp.register_blueprint(reminders.bp, url_prefix='/reminders')
-api_bp.register_blueprint(insights.bp, url_prefix='/insights')
-api_bp.register_blueprint(savings_goals.bp, url_prefix='/savings-goals')
+from . import auth
+from . import savings_goals
+api = Blueprint('api', __name__, url_prefix='/api')
+api.register_blueprint(savings_goals.bp)
