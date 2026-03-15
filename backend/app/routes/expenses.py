@@ -1,13 +1,11 @@
 from flask import Blueprint, request, jsonify
-from backend.app import db
-from backend.app.webhooks import webhook
-from backend.app.models import Expense
-from backend.app.extensions import jwt
-from flask_jwt_extended import jwt_required, get_jwt_identity
-        db.session.commit()
-        access_token = jwt.create_access_token(identity=current_user)
-        refresh_token = jwt.create_refresh_token(identity=current_user)
-        webhook.send('expense.created', expense_id=expense.id)
-        return jsonify(expense=expense.to_dict()), 201
-    except Exception as e:
-        db.session.rollback()
+from flask_webhook import emit_event
+from backend.app.models import Expense, db
+
+bp = Blueprint('expenses', __name__)
+    db.session.commit()
+    return jsonify(expense.to_dict()), 201
+    emit_event('expense_created', expense)
+
+@bp.route('/expenses/<int:expense_id>', methods=['GET'])
+def get_expense(expense_id):
