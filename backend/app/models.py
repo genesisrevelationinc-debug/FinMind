@@ -1,20 +1,22 @@
-from .extensions import db
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 class Expense(db.Model):
     __tablename__ = 'expenses'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, nullable=False)
     amount = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(100), nullable=False)
-    notes = db.Column(db.String(255))
-    date = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.String(255), nullable=True)
+    date = db.Column(db.DateTime, nullable=False)
 
 class Bill(db.Model):
     __tablename__ = 'bills'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(100), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     cadence = db.Column(db.String(50), nullable=False)
@@ -22,8 +24,5 @@ class Bill(db.Model):
     channel = db.Column(db.String(50), nullable=False)
     paid = db.Column(db.Boolean, default=False)
 
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
+    def __repr__(self):
+        return f'<Bill {self.name}>'
