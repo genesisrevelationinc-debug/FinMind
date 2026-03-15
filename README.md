@@ -42,24 +42,21 @@ flowchart LR
   SCH --> SMTP
   AI --> OAI
 ```
+
+## PostgreSQL Schema (DDL)
+See `backend/app/db/schema.sql`. Key tables:
+- users, categories, expenses, bills, reminders
+- ad_impressions, subscription_plans, user_subscriptions
+- refresh_tokens (optional if rotating), audit_logs
+
+## Redis Caching Policy
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
 - Expenses: CRUD `/expenses`
 - Bills: CRUD `/bills`, pay/mark `/bills/{id}/pay`
+- Insights: `/insights/monthly`, `/insights/budget-suggestion`, `/insights/weekly`
 - Reminders: CRUD `/reminders`, trigger `/reminders/run`
-- Insights: `/insights/monthly`, `/insights/budget-suggestion`
-- Weekly Summary: `/insights/weekly`
 
 ## MVP UI/UX Plan
-- Auth screens: register/login.
-- Dashboard:
-
-## Redis Caching Policy
-- Keys
-  - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
-  - `user:{id}:categories` — 24h TTL
-  - `user:{id}:upcoming_bills` — 15 min TTL
-  - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
-- Invalidation
   - On expense/bill create/update/delete -> delete affected monthly_summary, upcoming_bills, insights
 - Rate limiting (optional): `rl:{userId}:{endpoint}:{minute}` with short TTL
 
