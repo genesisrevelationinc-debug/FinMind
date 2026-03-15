@@ -8,12 +8,20 @@ def create_app():
     db.init_app(app)
 
     webhook = Webhook(app)
-    webhook.init_app(app)
+    webhook.add_event_handler('expense_created', handle_expense_created)
+    webhook.add_event_handler('bill_created', handle_bill_created)
 
-    from backend.app.webhooks import register_webhooks
-    register_webhooks(webhook)
-
-    from backend.app.routes import auth
-    app.register_blueprint(auth.bp)
+    with app.app_context():
+        from backend.app.routes import auth, expenses, bills, reminders, insights
+        app.register_blueprint(auth.bp)
+        app.register_blueprint(insights.bp)
 
     return app
+
+def handle_expense_created(expense):
+    # Logic to handle expense created event
+    pass
+
+def handle_bill_created(bill):
+    # Logic to handle bill created event
+    pass
