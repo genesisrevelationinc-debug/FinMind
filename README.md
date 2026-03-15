@@ -53,19 +53,21 @@ See `backend/app/db/schema.sql`. Key tables:
 - Keys
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
   - `user:{id}:categories` — 24h TTL
-- Reminders: CRUD `/reminders`, trigger `/reminders/run`
-- Insights: `/insights/monthly`, `/insights/budget-suggestion`
+- Payments stubbed; swap in Stripe when moving off free tier.
 
-## Multi-Account Financial Overview
-- **Endpoint**: `/multi-account/overview`
-- **Method**: `GET`
-- **Description**: Retrieve an overview of all financial accounts for the authenticated user.
-- **Security**: Bearer Token Authentication
-- **Response**: JSON array of account overviews
+## Organic Marketing Strategies
+- Content: budgeting tips, “FinMind monthly challenge” on socials.
+- SEO: landing with calculators (50/30/20, debt snowball), schema markup.
+- Communities: Reddit PF, indie hackers build-in-public.
+- Referral: give 1 month premium for inviting 3 friends.
 
-## MVP UI/UX Plan
-- Auth screens: register/login.
-- Dashboard:
+## Multi-Account Financial Overview Dashboard
+- Support viewing multiple financial accounts in one view.
+- API endpoint: `/api/dashboard/overview`
+- Authentication required.
+
+## Project Structure
+
 ## API Endpoints
 OpenAPI: `backend/app/openapi.yaml`
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
