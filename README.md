@@ -42,26 +42,28 @@ flowchart LR
   SCH --> SMTP
   AI --> OAI
 ```
-- Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
-- Expenses: CRUD `/expenses`
-- Bills: CRUD `/bills`, pay/mark `/bills/{id}/pay`
-- Reminders: CRUD `/reminders`, trigger `/reminders/run`
-- Insights: `/insights/monthly`, `/insights/budget-suggestion`
-- Weekly Summary: `/insights/weekly`
 
-## MVP UI/UX Plan
-- Auth screens: register/login.
-- Dashboard:
+## PostgreSQL Schema (DDL)
+See `backend/app/db/schema.sql`. Key tables:
+- users, categories, expenses, bills, reminders
+- ad_impressions, subscription_plans, user_subscriptions
+- refresh_tokens (optional if rotating), audit_logs
 
 ## Redis Caching Policy
 - Keys
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
-  - `user:{id}:categories` — 24h TTL
-  - `user:{id}:upcoming_bills` — 15 min TTL
-  - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
-- Invalidation
-  - On expense/bill create/update/delete -> delete affected monthly_summary, upcoming_bills, insights
-- Rate limiting (optional): `rl:{userId}:{endpoint}:{minute}` with short TTL
+- Insights: `/insights/monthly`, `/insights/budget-suggestion`
+
+## MVP UI/UX Plan
+- Dashboard:
+  - Monthly spend chart, category breakdown donut.
+  - Upcoming bills list with due dates and pay status.
+  - AI budget suggestion card.
+- Expenses page: add expense (amount, category, notes, date), list & filter.
+- Bills page: create bill (name, amount, cadence, due date, channel), toggle WhatsApp/email.
+- Settings: profile, categories, reminders default channel, export (premium).
+
+## Monetization Plan
 
 ## API Endpoints
 OpenAPI: `backend/app/openapi.yaml`
@@ -79,9 +81,10 @@ OpenAPI: `backend/app/openapi.yaml`
   - AI budget suggestion card.
 - Expenses page: add expense (amount, category, notes, date), list & filter.
 - Bills page: create bill (name, amount, cadence, due date, channel), toggle WhatsApp/email.
-- Settings: profile, categories, reminders default channel, export (premium).
+- Referral: give 1 month premium for inviting 3 friends.
 
-## Monetization Plan
+## Project Structure
+
 - Free: ads in dashboard and list pages (lightweight, non-intrusive). Record impressions in `ad_impressions`.
 - Premium ($/mo): CSV/Excel export, multi-device sync, priority insights, remove ads.
 - Payments stubbed; swap in Stripe when moving off free tier.
