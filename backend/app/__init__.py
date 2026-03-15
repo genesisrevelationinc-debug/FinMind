@@ -1,13 +1,13 @@
 from flask import Flask
+from .extensions import scheduler, init_scheduler, shutdown_scheduler
 from .config import Config
-from .extensions import db, jwt, init_extensions
-from .routes import api_bp, setup_scheduler
 
-def create_app(config_class=Config):
+def create_app():
     app = Flask(__name__)
-    init_extensions(app)
+    app.config.from_object(Config)
 
-    app.register_blueprint(api_bp, url_prefix='/api')
-    setup_scheduler()
+    init_scheduler(app)
 
-    return app
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        shutdown_scheduler()
