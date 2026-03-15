@@ -3,95 +3,33 @@ info:
   title: FinMind API
   version: 1.0.0
 paths:
-  /auth/register:
-    post:
-      summary: Register a new user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                email:
-                  type: string
-                password:
-                  type: string
-      responses:
-        '201':
-          description: User registered successfully
-  /auth/login:
-    post:
-      summary: Login a user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
-      responses:
-        '200':
-          description: User logged in successfully
   /api/dashboard/overview:
     get:
-      summary: Get financial overview for a user
-      parameters:
-        - in: query
-          name: user_id
-          schema:
-            type: integer
-          required: true
-          description: ID of the user
+      summary: Get financial overview for multiple accounts
+      security:
+        - jwt: []
       responses:
         '200':
-          description: Financial overview
+          description: A JSON object containing the financial overview
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  user_id:
-                    type: integer
+                  user:
+                    type: string
                   total_expenses:
                     type: number
                   total_bills:
                     type: number
-                  expenses:
+                  accounts:
                     type: array
                     items:
                       type: object
                       properties:
-                        id:
-                          type: integer
-                        amount:
-                          type: number
-                        category:
-                          type: string
-                        notes:
-                          type: string
-                        date:
-                          type: string
-                  bills:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: integer
                         name:
                           type: string
-                        amount:
+                        expenses:
                           type: number
-                        cadence:
-                          type: string
-                        due_date:
-                          type: string
-                        channel:
-                          type: string
+                        bills:
+                          type: number
