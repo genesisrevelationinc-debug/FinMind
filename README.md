@@ -45,18 +45,17 @@ flowchart LR
 
 ## PostgreSQL Schema (DDL)
 See `backend/app/db/schema.sql`. Key tables:
-SCH --> TW
-SCH --> SMTP
-AI --> OAI
+- users, categories, expenses, bills, reminders
+- ad_impressions, subscription_plans, user_subscriptions
+- Reminders: CRUD `/reminders`, trigger `/reminders/run`
+- Insights: `/insights/monthly`, `/insights/budget-suggestion`
 
-## Multi-account Financial Overview Dashboard
-- Endpoint: `/api/dashboard/overview`
-- Retrieves a summary of financial accounts, total expenses, and total bills.
+- **Dashboard:**
+  - Multi-account financial overview `/api/dashboard/overview`
 
-## Redis Caching Policy
-- Keys
-  - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
-  - `user:{id}:categories` — 24h TTL
+## MVP UI/UX Plan
+- Auth screens: register/login.
+- Dashboard:
   - `user:{id}:upcoming_bills` — 15 min TTL
   - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
 - Invalidation
