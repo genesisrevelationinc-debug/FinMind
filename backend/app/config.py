@@ -1,11 +1,19 @@
 import os
-from flask_webhook import WebhookConfig
+from dotenv import load_dotenv
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
 
-class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
+load_dotenv()
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'your_jwt_secret_key'
-    WEBHOOK_SECRET = os.environ.get('WEBHOOK_SECRET') or 'your_webhook_secret_key'
-    WEBHOOK_URL = os.environ.get('WEBHOOK_URL') or 'https://your-webhook-url.com'
-    WEBHOOK_CONFIG = WebhookConfig(secret=WEBHOOK_SECRET, url=WEBHOOK_URL)
+    SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default_jwt_secret_key')
+    WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET', 'default_webhook_secret')
+    WEBHOOK_PRIVATE_KEY = serialization.load_pem_private_key(
+        os.getenv('WEBHOOK_PRIVATE_KEY').encode(),
+        password=None,
+    )
+    WEBHOOK_PUBLIC_KEY = serialization.load_pem_public_key(
+        os.getenv('WEBHOOK_PUBLIC_KEY').encode(),
+    )
