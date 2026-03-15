@@ -1,14 +1,39 @@
-    channel VARCHAR(50) NOT NULL,
-    user_id INTEGER NOT NULL REFERENCES users(id)
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(120) UNIQUE NOT NULL
+);
+
+CREATE TABLE expenses (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    amount NUMERIC NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    notes VARCHAR(255),
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE bills (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    amount NUMERIC NOT NULL,
+    due_date TIMESTAMP NOT NULL,
+    channel VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE reminders (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    due_date TIMESTAMP NOT NULL,
+    channel VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE audit_logs (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id),
-    action VARCHAR(50) NOT NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    message TEXT NOT NULL
 );
 
-CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
-CREATE INDEX idx_audit_logs_action ON audit_logs(action);
-CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp);
+-- Additional tables and schema as per existing content
