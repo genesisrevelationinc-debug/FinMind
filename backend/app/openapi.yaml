@@ -3,33 +3,48 @@ info:
   title: FinMind API
   version: 1.0.0
 paths:
-  /api/dashboard/overview:
+  /multi-account/overview:
     get:
-      summary: Get financial overview for multiple accounts
+      summary: Get multi-account financial overview
+      description: Retrieve an overview of all financial accounts for the authenticated user.
+      tags:
+        - Multi-Account
       security:
-        - jwt: []
+        - BearerAuth: []
       responses:
         '200':
-          description: A JSON object containing the financial overview
+          description: A JSON array of account overviews
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  user:
-                    type: string
-                  total_expenses:
-                    type: number
-                  total_bills:
-                    type: number
-                  accounts:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        name:
-                          type: string
-                        expenses:
-                          type: number
-                        bills:
-                          type: number
+                type: array
+                items:
+                  type: object
+                  properties:
+                    account_id:
+                      type: integer
+                    balance:
+                      type: number
+                    currency:
+                      type: string
+                    transactions:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          amount:
+                            type: number
+                          description:
+                            type: string
+                          date:
+                            type: string
+                            format: date-time
+        '404':
+          description: User not found
+securitySchemes:
+  BearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
