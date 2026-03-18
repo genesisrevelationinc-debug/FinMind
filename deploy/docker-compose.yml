@@ -1,28 +1,25 @@
 version: '3.8'
 
 services:
-  web:
-    build: ../
-    command: flask run --host=0.0.0.0
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
     volumes:
-      - ../:/app
+      - redis-data:/data
+
+  backend:
+    build: ../backend
     ports:
       - "5000:5000"
     environment:
-      - FLASK_APP=app/__init__.py
-      - FLASK_ENV=development
       - DATABASE_URL=postgresql://user:password@db:5432/finmind
       - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=super-secret
     depends_on:
       - db
       - redis
 
-  db:
-    image: postgres:13
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=finmind
-
-  redis:
-    image: redis:6
+volumes:
+  db-data:
+  redis-data:
