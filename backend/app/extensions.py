@@ -1,14 +1,23 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_apscheduler import APScheduler
+from flask_jwt_extended import JWTManager
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.executors.pool import ThreadPoolExecutor
+from apscheduler.jobstores.redis import RedisJobStore
+import logging
 
 db = SQLAlchemy()
-scheduler = APScheduler()
+jwt = JWTManager()
+
+scheduler = BackgroundScheduler(
+    jobstores={'default': RedisJobStore(host='localhost', port=6379, db=0)},
+    executors={'default': ThreadPoolExecutor(20)},
+    job_defaults={'coalesce': False, 'max_instances': 3},
+    timezone='UTC'
+)
 
 def init_extensions(app):
     db.init_app(app)
-    scheduler.init_app(app)
+    jwt.init_app(app)
     scheduler.start()
-
-    # Configure job defaults
-    scheduler.api_enabled = True
-    scheduler.add_job(id='monitor_jobs', func=monitor_jobs, trigger='interval', seconds=300)
+    app.logger.setLevel(logging.INFO)
+    app.logger.addHandler(logging.StreamHandler())
