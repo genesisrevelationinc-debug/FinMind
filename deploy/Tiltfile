@@ -1,20 +1,26 @@
-k8s_yaml('k8s/deployment.yaml')
-k8s_resource('finmind-backend', port_forwards=8000)
-k8s_resource('finmind-frontend', port_forwards=3000)
+k8s_yaml('k8s/*.yaml')
 
 docker_build('finmind-backend', './app')
-docker_build('finmind-frontend', './frontend')
+
+k8s_resource('finmind-backend', port_forwards=8000)
 
 local_resource(
-    'setup',
-    cmd='kubectl apply -f k8s/namespace.yaml',
-    resource_deps=['finmind-backend', 'finmind-frontend']
+    'db',
+    'docker run -d --name finmind-db -e POSTGRES_USER=finmind -e POSTGRES_PASSWORD=finmind -e POSTGRES_DB=finmind postgres:13',
+    resource_deps=['finmind-backend'],
+    restart_on=['k8s/*.yaml'],
+    port_forwards=5432
 )
 
 local_resource(
-    'cleanup',
-    cmd='kubectl delete -f k8s/namespace.yaml',
-    resource_deps=['finmind-backend', 'finmind-frontend']
+    'redis',
+    'docker run -d --name finmind-redis redis:6',
+    resource_deps=['finmind-backend'],
+    restart_on=['k8s/*.yaml'],
+    port_forwards=6379
 )
 
-allow_k8s_contexts('minikube', 'docker-desktop')
+watch_settings(
+    watch_dirs=['app'],
+    ignore=['*.pyc', '__pycache__'],
+)
