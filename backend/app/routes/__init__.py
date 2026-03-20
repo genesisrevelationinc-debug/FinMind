@@ -1,16 +1,8 @@
 from flask import Blueprint
-from . import auth, expenses, bills, reminders, insights
+from . import auth
 from ..extensions import scheduler
 
 def register_routes(app):
     app.register_blueprint(auth.bp)
-    app.register_blueprint(expenses.bp)
-    app.register_blueprint(bills.bp)
-    app.register_blueprint(reminders.bp)
-    app.register_blueprint(insights.bp)
-
-    # Example job registration
-    @scheduler.scheduled_job('interval', id='reminder_job', minutes=1)
-    def reminder_job():
-        app.logger.info("Running reminder job...")
-        # Add job logic here
+    # Example of adding a scheduled job
+    # scheduler.add_job(func=some_function, trigger='interval', seconds=60, id='job_id', replace_existing=True)
