@@ -41,17 +41,19 @@ flowchart LR
   SCH --> TW
   SCH --> SMTP
   AI --> OAI
-```
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
 - Expenses: CRUD `/expenses`
 - Bills: CRUD `/bills`, pay/mark `/bills/{id}/pay`
 - Reminders: CRUD `/reminders`, trigger `/reminders/run`
-- Insights: `/insights/monthly`, `/insights/budget-suggestion`
-- Weekly Summary: `/insights/weekly`
+- Insights: `/insights/monthly`, `/insights/budget-suggestion`, `/insights/weekly`
+
+## Weekly Financial Summary
+
+The `/insights/weekly` endpoint provides a summary of expenses and bills for the past week, categorized by expense type.
 
 ## MVP UI/UX Plan
 - Auth screens: register/login.
-- Dashboard:
+- refresh_tokens (optional if rotating), audit_logs
 
 ## Redis Caching Policy
 - Keys
