@@ -5,13 +5,9 @@ info:
 paths:
   /api/dashboard/overview:
     get:
-      summary: Get financial overview for a user
-      parameters:
-        - in: query
-          name: user_id
-          required: true
-          schema:
-            type: integer
+      summary: Get financial overview for multiple accounts
+      security:
+        - jwt: []
       responses:
         '200':
           description: A JSON object containing the financial overview
@@ -20,17 +16,20 @@ paths:
               schema:
                 type: object
                 properties:
-                  user_id:
-                    type: integer
+                  user:
+                    type: string
                   total_expenses:
                     type: number
                   total_bills:
                     type: number
-                  expenses:
+                  accounts:
                     type: array
                     items:
                       type: object
-                  bills:
-                    type: array
-                    items:
-                      type: object
+                      properties:
+                        name:
+                          type: string
+                        expenses:
+                          type: number
+                        bills:
+                          type: number
