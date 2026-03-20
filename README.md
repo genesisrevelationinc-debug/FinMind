@@ -100,24 +100,21 @@ finmind/
       routes/
         __init__.py
         auth.py
+        expenses.py
 - Payments stubbed; swap in Stripe when moving off free tier.
 
-## Project Structure
-## Webhook Event System
-- **Signed Delivery**: Webhooks are signed using a secret key.
-- **Retry & Failure Handling**: Implemented using Flask-Webhook.
-- **Event Types**:
+## Organic Marketing Strategies
+- **Webhook Event System**
+  - Emit signed webhooks for key events.
+  - Signed delivery
+  - Retry & failure handling
+  - Event types documented
+- **Event Types**
   - `expense_created`: Triggered when a new expense is created.
   - `bill_created`: Triggered when a new bill is created.
-
-## Webhook Configuration
-- `WEBHOOK_SECRET`: Secret key for signing webhooks.
-- `WEBHOOK_URL`: URL to which webhooks are sent.
-
-
-      services/
-        __init__.py
-        ai.py
+- Content: budgeting tips, “FinMind monthly challenge” on socials.
+- SEO: landing with calculators (50/30/20, debt snowball), schema markup.
+- Communities: Reddit PF, indie hackers build-in-public.
         cache.py
         reminders.py
       db/
