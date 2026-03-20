@@ -1,20 +1,17 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(80) UNIQUE NOT NULL,
-    password_hash VARCHAR(128) NOT NULL
+    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    login_attempts INT DEFAULT 0
 );
 
 CREATE TABLE audit_logs (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
-    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ip_address VARCHAR(45) NOT NULL,
-    user_agent VARCHAR(255) NOT NULL,
-    success BOOLEAN DEFAULT TRUE
+    user_id INT NOT NULL,
+    activity TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
-
-CREATE INDEX idx_user_id ON audit_logs(user_id);
-CREATE INDEX idx_login_time ON audit_logs(login_time);
-CREATE INDEX idx_ip_address ON audit_logs(ip_address);
-CREATE INDEX idx_user_agent ON audit_logs(user_agent);
-CREATE INDEX idx_success ON audit_logs(success);
