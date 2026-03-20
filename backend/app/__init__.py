@@ -1,10 +1,15 @@
 from flask import Flask
 from .config import Config
-from .extensions import init_extensions, register_routes
+from .extensions import init_extensions
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(config_class)
+
     init_extensions(app)
-    register_routes(app)
+
+    with app.app_context():
+        from . import routes
+        db.create_all()
+
     return app
