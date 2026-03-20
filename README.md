@@ -42,20 +42,18 @@ flowchart LR
   SCH --> SMTP
   AI --> OAI
 ```
-
-## PostgreSQL Schema (DDL)
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
 - Expenses: CRUD `/expenses`
 - Bills: CRUD `/bills`, pay/mark `/bills/{id}/pay`
 - Reminders: CRUD `/reminders`, trigger `/reminders/run`
 - Insights: `/insights/monthly`, `/insights/budget-suggestion`
-- Insights: `/insights/weekly` (new) - Generates weekly summaries highlighting trends and insights.
-
-## Weekly Summary
-The `/insights/weekly` endpoint provides a summary of expenses and bills for the current week.
+- Weekly Summary: `/insights/weekly`
 
 ## MVP UI/UX Plan
 - Auth screens: register/login.
+- Dashboard:
+
+## Redis Caching Policy
 - Keys
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
   - `user:{id}:categories` — 24h TTL
