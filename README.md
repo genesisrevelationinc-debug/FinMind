@@ -104,15 +104,14 @@ finmind/
 
 ## Project Structure
 ## Webhook Event System
-- **Signed Delivery**: Webhooks are signed using a secret key.
-- **Retry & Failure Handling**: Implemented using Flask-Webhook.
-- **Event Types**:
+- **Signed delivery**: Webhooks are signed using a secret key.
+- **Retry & failure handling**: Implemented using a queue system.
+- **Event types**:
   - `expense_created`: Triggered when a new expense is created.
   - `bill_created`: Triggered when a new bill is created.
 
 ## Webhook Configuration
-- `WEBHOOK_SECRET`: Secret key for signing webhooks.
-- `WEBHOOK_URL`: URL to which webhooks are sent.
+- Set `WEBHOOK_SECRET_KEY` in your environment variables.
 
 
       services/
