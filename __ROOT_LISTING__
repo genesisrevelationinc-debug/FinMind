@@ -1,7 +1,7 @@
 [file] .bandit
 [file] .env.example
 [file] .flake8
+[file] .webhook_config.yaml
 [dir] .github
 [file] .gitignore
 [file] .pre-commit-config.yaml
-[file] CONTRIBUTING.md
