@@ -54,8 +54,8 @@ See `backend/app/db/schema.sql`. Key tables:
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
   - `user:{id}:categories` — 24h TTL
   - `user:{id}:upcoming_bills` — 15 min TTL
-  - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
-- Invalidation
+  AI --> OAI
+
   - On expense/bill create/update/delete -> delete affected monthly_summary, upcoming_bills, insights
 - Rate limiting (optional): `rl:{userId}:{endpoint}:{minute}` with short TTL
 
@@ -100,21 +100,10 @@ finmind/
       routes/
         __init__.py
         auth.py
-- Payments stubbed; swap in Stripe when moving off free tier.
-
-## Project Structure
-## Webhook Event System
-- **Signed Delivery**: Webhooks are signed using a secret key.
-- **Retry & Failure Handling**: Implemented using Flask-Webhook.
-- **Event Types**:
-  - `expense_created`: Triggered when a new expense is created.
-  - `bill_created`: Triggered when a new bill is created.
-
-## Webhook Configuration
-- `WEBHOOK_SECRET`: Secret key for signing webhooks.
-- `WEBHOOK_URL`: URL to which webhooks are sent.
-
-
+        expenses.py
+        bills.py
+        reminders.py
+        insights.py
       services/
         __init__.py
         ai.py
