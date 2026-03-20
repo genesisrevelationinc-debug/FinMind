@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_webhook import emit_event
-from backend.app.models import db, Expense
-from backend.app.extensions import db
+from backend.app.models import Expense, db
 
-    db.session.add(new_expense)
+bp = Blueprint('expenses', __name__)
     db.session.commit()
+    return jsonify(expense.to_dict()), 201
+    emit_event('expense_created', expense)
 
-    emit_event('expense_created', new_expense)
-    return jsonify(new_expense.to_dict()), 201
+@bp.route('/expenses/<int:expense_id>', methods=['GET'])
+def get_expense(expense_id):
