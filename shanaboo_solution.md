@@ -170,7 +170,7 @@
 +
 +--- a/deploy/kubernetes/redis-deployment.yaml
 +++ b/deploy/kubernetes/redis-deployment.yaml
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,24 @@
 +apiVersion: apps/v1
 +kind: Deployment
 +metadata:
@@ -195,8 +195,7 @@
 +          mountPath: /data
 +      volumes:
 +      - name: redis-storage
-+        persistentVolumeClaim:
-+          claimName: redis-pvc
++        emptyDir: {}
 +
 +--- a/deploy/kubernetes/redis-service.yaml
 +++ b/deploy/kubernetes/redis-service.yaml
@@ -211,4 +210,6 @@
 +  ports:
 +    - protocol: TCP
 +      port: 6379
-+      targetPort: 
++      targetPort: 6379
++
++--- a
