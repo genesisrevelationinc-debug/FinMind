@@ -120,9 +120,31 @@
 +      targetPort: 5000
 +  type: LoadBalancer
 +
++--- a/deploy/kubernetes/ingress.yaml
++++ b/deploy/kubernetes/ingress.yaml
+@@ -0,0 +1,20 @@
++apiVersion: networking.k8s.io/v1
++kind: Ingress
++metadata:
++  name: finmind-ingress
++  annotations:
++    nginx.ingress.kubernetes.io/rewrite-target: /
++spec:
++  rules:
++  - host: finmind.example.com
++    http:
++      paths:
++      - path: /
++        pathType: Prefix
++        backend:
++          service:
++            name: finmind-service
++            port:
++              number: 80
++
 +--- a/deploy/kubernetes/hpa.yaml
 +++ b/deploy/kubernetes/hpa.yaml
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,13 @@
 +apiVersion: autoscaling/v2
 +kind: HorizontalPodAutoscaler
 +metadata:
@@ -142,35 +164,9 @@
 +        type: Utilization
 +        averageUtilization: 50
 +
-+--- a/deploy/kubernetes/ingress.yaml
-+++ b/deploy/kubernetes/ingress.yaml
-@@ -0,0 +1,20 @@
-+apiVersion: networking.k8s.io/v1
-+kind: Ingress
-+metadata:
-+  name: finmind-ingress
-+  annotations:
-+    nginx.ingress.kubernetes.io/rewrite-target: /
-+spec:
-+  tls:
-+  - hosts:
-+    - finmind.example.com
-+    secretName: finmind-tls
-+  rules:
-+  - host: finmind.example.com
-+    http:
-+      paths:
-+      - path: /
-+        pathType: Prefix
-+        backend:
-+          service:
-+            name: finmind-service
-+            port:
-+              number: 80
-+
 +--- a/deploy/kubernetes/redis-deployment.yaml
 +++ b/deploy/kubernetes/redis-deployment.yaml
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,29 @@
 +apiVersion: apps/v1
 +kind: Deployment
 +metadata:
@@ -195,7 +191,8 @@
 +          mountPath: /data
 +      volumes:
 +      - name: redis-storage
-+        emptyDir: {}
++        persistentVolumeClaim:
++          claimName: redis-pvc
 +
 +--- a/deploy/kubernetes/redis-service.yaml
 +++ b/deploy/kubernetes/redis-service.yaml
@@ -212,4 +209,5 @@
 +      port: 6379
 +      targetPort: 6379
 +
-+--- a
++--- a/deploy/kubernetes/redis-pvc.yaml
++++ b/deploy/kubernetes/redis-pvc
