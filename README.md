@@ -40,32 +40,28 @@ flowchart LR
   API -->|reminder jobs| SCH
   SCH --> TW
   SCH --> SMTP
-  AI --> OAI
-```
-
-## PostgreSQL Schema (DDL)
     JWT[PyJWT]
     AI[Insights Service]
     SCH[Scheduler/APScheduler]
-    RED[Redis]
+    SCH -->|Job Store| RD
+    SCH -->|Executors| RD
+    SCH -->|Logging| STDOUT
   end
+See `backend/app/db/schema.sql`. Key tables:
+- users, categories, expenses, bills, reminders
+- ad_impressions, subscription_plans, user_subscriptions
+- refresh_tokens (optional if rotating), audit_logs
 
-  subgraph Data
-    PG[(PostgreSQL)]
-    RD[(Redis)]
-  end
-
-  subgraph ThirdParty
+## Redis Caching Policy
 - Keys
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
   - `user:{id}:categories` — 24h TTL
-  end
+  - `user:{id}:upcoming_bills` — 15 min TTL
+  - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
+- Invalidation
+  - On expense/bill create/update/delete -> delete affected monthly_summary, upcoming_bills, insights
+- Rate limiting (optional): `rl:{userId}:{endpoint}:{minute}` with short TTL
 
-  A -->|HTTPS| CDN --> API
-  API -->|Job Queue| RED
-  API -->|ORM| PG
-  API -->|Cache| RD
-  API -->|JWT verify| JWT
 ## API Endpoints
 OpenAPI: `backend/app/openapi.yaml`
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
