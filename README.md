@@ -37,16 +37,19 @@ flowchart LR
   API -->|ORM| PG
   API -->|Cache| RD
   API -->|JWT verify| JWT
-  API -->|reminder jobs| SCH
-  SCH --> TW
-  SCH --> SMTP
     JWT[PyJWT]
     AI[Insights Service]
     SCH[Scheduler/APScheduler]
-    SCH -->|Job Store| RD
-    SCH -->|Executors| RD
-    SCH -->|Logging| STDOUT
+    SCH -->|reminder jobs| send_reminder
+    send_reminder --> TW
+    send_reminder --> SMTP
+    send_reminder -->|update status| RD
+    send_reminder -->|log| PG
+    send_reminder -->|retry| SCH
   end
+
+  subgraph Data
+## PostgreSQL Schema (DDL)
 See `backend/app/db/schema.sql`. Key tables:
 - users, categories, expenses, bills, reminders
 - ad_impressions, subscription_plans, user_subscriptions
