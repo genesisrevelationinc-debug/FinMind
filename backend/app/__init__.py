@@ -1,16 +1,17 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager
+from .extensions import db, init_app
 from .routes import api_bp
-from .models import db
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object('backend.app.config.Config')
+    app.config.from_object('config.Config')
 
-    db.init_app(app)
-    JWTManager(app)
+    init_app(app)
 
     app.register_blueprint(api_bp)
 
     return app
+
+if __name__ == '__main__':
+    app = create_app()
+    app.run(debug=True)
