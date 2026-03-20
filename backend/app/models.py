@@ -1,20 +1,23 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from .extensions import db
 from datetime import datetime
+from sqlalchemy.ext.declarative import declarative_base
 
-class User(db.Model):
+Base = declarative_base()
+
+
+class User(Base):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    username = Column(String(80), unique=True, nullable=False)
-    password_hash = Column(String(128), nullable=False)
-    audit_logs = relationship('AuditLog', backref='user', lazy=True)
+    email = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_login = Column(DateTime, default=datetime.utcnow)
+    login_attempts = Column(Integer, default=0)
 
-class AuditLog(db.Model):
+class AuditLog(Base):
     __tablename__ = 'audit_logs'
+
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    login_time = Column(DateTime, default=datetime.utcnow)
-    ip_address = Column(String(45), nullable=False)
-    user_agent = Column(String(255), nullable=False)
-    success = Column(Boolean, default=True)
+    activity = Column(String, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
