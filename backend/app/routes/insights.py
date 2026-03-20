@@ -7,30 +7,28 @@ bp = Blueprint('insights', __name__, url_prefix='/insights')
 
 @bp.route('/weekly', methods=['GET'])
 def weekly_summary():
-    current_date = datetime.utcnow()
-    start_of_week = current_date - timedelta(days=current_date.weekday())
-    end_of_week = start_of_week + timedelta(days=6)
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=7)
 
-    weekly_expenses = Expense.query.filter(
-        Expense.date >= start_of_week,
-        Expense.date <= end_of_week
-    ).all()
+    expenses = Expense.query.filter(Expense.date >= start_date, Expense.date <= end_date).all()
+    bills = Bill.query.filter(Bill.due_date >= start_date, Bill.due_date <= end_date).all()
 
-    weekly_bills = Bill.query.filter(
-        Bill.due_date >= start_of_week,
-        Bill.due_date <= end_of_week
-    ).all()
+    total_expenses = sum(expense.amount for expense in expenses)
+    total_bills = sum(bill.amount for bill in bills)
 
-    total_expenses = sum(expense.amount for expense in weekly_expenses)
-    total_bills = sum(bill.amount for bill in weekly_bills)
+    expense_categories = {}
+    for expense in expenses:
+        if expense.category in expense_categories:
+            expense_categories[expense.category] += expense.amount
+        else:
+            expense_categories[expense.category] = expense.amount
 
     summary = {
-        "start_of_week": start_of_week.isoformat(),
-        "end_of_week": end_of_week.isoformat(),
-        "total_expenses": total_expenses,
-        "total_bills": total_bills,
-        "expenses": [{"id": exp.id, "amount": exp.amount, "category": exp.category, "date": exp.date.isoformat()} for exp in weekly_expenses],
-        "bills": [{"id": bill.id, "amount": bill.amount, "name": bill.name, "due_date": bill.due_date.isoformat()} for bill in weekly_bills]
+        'start_date': start_date.isoformat(),
+        'end_date': end_date.isoformat(),
+        'total_expenses': total_expenses,
+        'total_bills': total_bills,
+        'expense_categories': expense_categories
     }
 
     return jsonify(summary)
