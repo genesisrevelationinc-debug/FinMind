@@ -37,34 +37,35 @@ flowchart LR
   API -->|ORM| PG
   API -->|Cache| RD
   API -->|JWT verify| JWT
+  API -->|reminder jobs| SCH
+  SCH --> TW
+  SCH --> SMTP
+  AI --> OAI
+```
+
+## PostgreSQL Schema (DDL)
     JWT[PyJWT]
     AI[Insights Service]
     SCH[Scheduler/APScheduler]
-    SCH -->|reminder jobs| send_reminder
-    send_reminder --> TW
-    send_reminder --> SMTP
-    send_reminder -->|update status| RD
-    send_reminder -->|log| PG
-    send_reminder -->|retry| SCH
+    RED[Redis]
   end
 
   subgraph Data
-## PostgreSQL Schema (DDL)
-See `backend/app/db/schema.sql`. Key tables:
-- users, categories, expenses, bills, reminders
-- ad_impressions, subscription_plans, user_subscriptions
-- refresh_tokens (optional if rotating), audit_logs
+    PG[(PostgreSQL)]
+    RD[(Redis)]
+  end
 
-## Redis Caching Policy
+  subgraph ThirdParty
 - Keys
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
   - `user:{id}:categories` — 24h TTL
-  - `user:{id}:upcoming_bills` — 15 min TTL
-  - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
-- Invalidation
-  - On expense/bill create/update/delete -> delete affected monthly_summary, upcoming_bills, insights
-- Rate limiting (optional): `rl:{userId}:{endpoint}:{minute}` with short TTL
+  end
 
+  A -->|HTTPS| CDN --> API
+  API -->|Job Queue| RED
+  API -->|ORM| PG
+  API -->|Cache| RD
+  API -->|JWT verify| JWT
 ## API Endpoints
 OpenAPI: `backend/app/openapi.yaml`
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
