@@ -1,20 +1,28 @@
 version: '3.8'
 
 services:
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"
+  web:
+    build: ../
+    command: gunicorn -w 4 -b 0.0.0.0:5000 app:app
     volumes:
-      - redis-data:/data
-
-  backend:
-    build:
-      context: ../backend
+      - ../:/app
+    ports:
       - "5000:5000"
+    environment:
+      - FLASK_APP=app/__init__.py
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://user:password@db/finmind
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - db
       - redis
 
-volumes:
-  redis-data:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: finmind
+
+  redis:
+    image: redis:6
