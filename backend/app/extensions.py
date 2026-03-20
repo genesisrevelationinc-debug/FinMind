@@ -2,4 +2,5 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-# Initialize other extensions here if needed
+def init_app(app):
+    db.init_app(app)
