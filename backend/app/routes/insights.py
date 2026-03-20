@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models import db, Expense, Bill
 from datetime import datetime, timedelta
 
-bp = Blueprint('insights', __name__)
+bp = Blueprint('insights', __name__, url_prefix='/insights')
 
 @bp.route('/weekly', methods=['GET'])
 @jwt_required()
