@@ -100,10 +100,20 @@ finmind/
       routes/
         __init__.py
         auth.py
-        expenses.py
-  - Referral: give 1 month premium for inviting 3 friends.
+- Payments stubbed; swap in Stripe when moving off free tier.
 
 ## Project Structure
+## Webhook Event System
+- **Signed Delivery**: Webhooks are signed using a secret key.
+- **Retry & Failure Handling**: Implemented using Flask-Webhook.
+- **Event Types**:
+  - `expense_created`: Triggered when a new expense is created.
+  - `bill_created`: Triggered when a new bill is created.
+
+## Webhook Configuration
+- `WEBHOOK_SECRET`: Secret key for signing webhooks.
+- `WEBHOOK_URL`: URL to which webhooks are sent.
+
 
       services/
         __init__.py
