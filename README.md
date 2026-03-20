@@ -50,12 +50,15 @@ See `backend/app/db/schema.sql`. Key tables:
 - Reminders: CRUD `/reminders`, trigger `/reminders/run`
 - Insights: `/insights/monthly`, `/insights/budget-suggestion`
 
-- **Dashboard:**
-  - Multi-account financial overview `/api/dashboard/overview`
+## Multi-Account Support
+- Accounts: CRUD `/accounts`
+  - `GET /accounts` - Retrieve all accounts for the authenticated user.
+  - `POST /accounts` - Create a new account for the authenticated user.
+  - `PUT /accounts/<int:account_id>` - Update an existing account.
+  - `DELETE /accounts/<int:account_id>` - Delete an account.
 
 ## MVP UI/UX Plan
 - Auth screens: register/login.
-- Dashboard:
   - `user:{id}:upcoming_bills` — 15 min TTL
   - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
 - Invalidation
