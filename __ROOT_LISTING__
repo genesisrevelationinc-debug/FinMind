@@ -11,3 +11,5 @@
 [dir] deploy
 [file] docker-compose.yml
 [dir] monitoring
+[dir] packages
+[dir] scripts
