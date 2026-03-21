@@ -13,7 +13,7 @@ def get_accounts():
 
 @accounts_bp.route('/', methods=['POST'])
 @jwt_required()
-def create_account():
+def add_account():
     user_id = get_jwt_identity()
     data = request.get_json()
     new_account = Account(user_id=user_id, name=data['name'], balance=data['balance'])
@@ -21,22 +21,10 @@ def create_account():
     db.session.commit()
     return jsonify(new_account.to_dict()), 201
 
-@accounts_bp.route('/<int:account_id>', methods=['PUT'])
-@jwt_required()
-def update_account(account_id):
-    user_id = get_jwt_identity()
-    account = Account.query.filter_by(id=account_id, user_id=user_id).first_or_404()
-    data = request.get_json()
-    account.name = data.get('name', account.name)
-    account.balance = data.get('balance', account.balance)
-    db.session.commit()
-    return jsonify(account.to_dict()), 200
-
 @accounts_bp.route('/<int:account_id>', methods=['DELETE'])
 @jwt_required()
 def delete_account(account_id):
-    user_id = get_jwt_identity()
-    account = Account.query.filter_by(id=account_id, user_id=user_id).first_or_404()
+    account = Account.query.get_or_404(account_id)
     db.session.delete(account)
     db.session.commit()
-    return jsonify({}), 204
+    return jsonify({'message': 'Account deleted'}), 200
