@@ -3,33 +3,33 @@ info:
   title: FinMind API
   version: 1.0.0
 paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+  /api/auth/login:
+    post:
+      summary: Login a user
+  /api/auth/refresh:
+    post:
+      summary: Refresh JWT token
+  /api/expenses:
+    get:
+      summary: List expenses
+    post:
+      summary: Create an expense
+  /api/bills:
+    get:
+      summary: List bills
+    post:
+      summary: Create a bill
+  /api/reminders:
+    get:
+      summary: List reminders
+    post:
+      summary: Create a reminder
+  /api/insights/monthly:
+    get:
+      summary: Get monthly insights
   /api/dashboard/overview:
     get:
-      summary: Get financial overview for multiple accounts
-      security:
-        - jwt: []
-      responses:
-        '200':
-          description: A JSON object containing the financial overview
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  user:
-                    type: string
-                  total_expenses:
-                    type: number
-                  total_bills:
-                    type: number
-                  accounts:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        name:
-                          type: string
-                        expenses:
-                          type: number
-                        bills:
-                          type: number
+      summary: Get financial overview
