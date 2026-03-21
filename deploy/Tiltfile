@@ -1,26 +1,28 @@
-k8s_yaml('k8s/*.yaml')
+k8s_yaml('k8s/deployment.yaml')
+k8s_resource('finmind-web', port_forwards=5000)
 
-docker_build('finmind-backend', '.', live_update=[
-    sync('.', '/app'),
-    run('pip install -r requirements.txt'),
-])
+docker_build('finmind-web', './app')
 
-k8s_resource('finmind-backend', port_forwards=5000, resource_selectors=['app=finmind-backend'])
+local_resource(
+    'db',
+    'docker run -d --name finmind-db -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=finmind postgres:13',
+    resource_deps=['finmind-web'],
+    restart_on=['./backend/app/db/schema.sql']
+)
 
-local_resource('frontend', cmd='npm run dev', port_forwards=3000, resource_deps=['finmind-backend'])
+local_resource(
+    'redis',
+    'docker run -d --name finmind-redis redis:6',
+    resource_deps=['finmind-web'],
+)
 
-allow_k8s_contexts('minikube', 'docker-desktop')
+allow_k8s_contexts('docker-desktop')
 
-watch_file('backend/app/db/schema.sql', run='kubectl exec -it $(kubectl get pods -l app=finmind-backend -o jsonpath="{.items[0].metadata.name}") -- psql -U user -d finmind -f /app/backend/app/db/schema.sql')
+watch_settings(
+    watch_file_changes=True,
+    watch_dirs=['./app'],
+)
 
-watch_file('backend/app/config.py', run='kubectl rollout restart deployment finmind-backend')
-
-watch_file('backend/app/routes/*.py', run='kubectl rollout restart deployment finmind-backend')
-
-watch_file('backend/app/models.py', run='kubectl rollout restart deployment finmind-backend')
-
-watch_file('backend/app/extensions.py', run='kubectl rollout restart deployment finmind-backend')
-
-watch_file('backend/app/__init__.py', run='kubectl rollout restart deployment finmind-backend')
-
-watch_file('backend/app/openapi.yaml', run='kubectl rollout restart deployment finmind-backend')
+update_settings(
+    delete_unused=True,
+)
