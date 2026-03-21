@@ -1,16 +1,16 @@
 from flask import Blueprint
-from . import auth, expenses, bills, reminders, insights
+from apscheduler.triggers.cron import CronTrigger
 from ..extensions import scheduler
+from .auth import auth_bp
+from .expenses import expenses_bp
+from .bills import bills_bp
+    app.register_blueprint(expenses_bp, url_prefix='/expenses')
+    app.register_blueprint(bills_bp, url_prefix='/bills')
+    app.register_blueprint(reminders_bp, url_prefix='/reminders')
+    app.register_blueprint(insights_bp, url_prefix='/insights')
 
-def register_routes(app):
-    app.register_blueprint(auth.bp)
-    app.register_blueprint(expenses.bp)
-    app.register_blueprint(bills.bp)
-    app.register_blueprint(reminders.bp)
-    app.register_blueprint(insights.bp)
+    # Example of scheduling a job
+    def example_job():
+        print("Running example job")
 
-    # Example job registration
-    @scheduler.scheduled_job('interval', id='reminder_job', minutes=1)
-    def reminder_job():
-        app.logger.info("Running reminder job...")
-        # Add job logic here
+    scheduler.add_job(example_job, CronTrigger.from_crontab('0 0 * * *'))  # Daily at midnight
