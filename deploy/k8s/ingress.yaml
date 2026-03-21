@@ -17,6 +17,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: finmind-backend-service
+            name: finmind-backend
             port:
               number: 80
