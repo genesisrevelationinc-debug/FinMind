@@ -1,30 +1,23 @@
+from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor
-from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_MISSED
+from apscheduler.jobstores.redis import RedisJobStore
 import logging
 
-logger = logging.getLogger(__name__)
+db = SQLAlchemy()
+jwt = JWTManager()
 
-def job_error_listener(event):
-    logger.error(f"Job {event.job_id} failed with exception: {event.exception}")
+scheduler = BackgroundScheduler(
+    jobstores={'default': RedisJobStore(host='localhost', port=6379, db=0)},
+    executors={'default': ThreadPoolExecutor(20)},
+    job_defaults={'coalesce': False, 'max_instances': 3},
+    timezone='UTC'
+)
 
-def job_missed_listener(event):
-    logger.warning(f"Job {event.job_id} missed its scheduled run")
-
-def init_scheduler(app):
-    jobstores = {
-        'default': MemoryJobStore()
-    }
-    executors = {
-        'default': ThreadPoolExecutor(20)
-    }
-    job_defaults = {
-        'coalesce': False,
-        'max_instances': 3
-    }
-    scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=app.config['TIMEZONE'])
-    scheduler.add_listener(job_error_listener, EVENT_JOB_ERROR)
-    scheduler.add_listener(job_missed_listener, EVENT_JOB_MISSED)
+def init_extensions(app):
+    db.init_app(app)
+    jwt.init_app(app)
     scheduler.start()
-    app.scheduler = scheduler
+    app.logger.setLevel(logging.INFO)
+    app.logger.addHandler(logging.StreamHandler())
