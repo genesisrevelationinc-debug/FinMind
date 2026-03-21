@@ -1,15 +1,12 @@
 from flask import Flask
-from .config import Config
-from .extensions import init_extensions
+from .extensions import db, migrate, jwt, cors
+from .extensions import init_scheduler
+from .routes import register_routes
 
-def create_app(config_class=Config):
-    app = Flask(__name__)
-    app.config.from_object(config_class)
+def create_app(config_name):
+    migrate.init_app(app, db)
+    jwt.init_app(app)
+    cors.init_app(app)
+    init_scheduler(app)
 
-    init_extensions(app)
-
-    with app.app_context():
-        from . import routes
-        db.create_all()
-
-    return app
+    register_routes(app)
