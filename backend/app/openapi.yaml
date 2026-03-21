@@ -3,33 +3,52 @@ info:
   title: FinMind API
   version: 1.0.0
 paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
   /api/dashboard/overview:
     get:
-      summary: Get financial overview for multiple accounts
+      summary: Get financial overview for the user
       security:
-        - jwt: []
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: month
+          schema:
+            type: string
+          description: Month for which to get the summary (format: yyyy-mm)
       responses:
         '200':
-          description: A JSON object containing the financial overview
+          description: Financial overview
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  user:
-                    type: string
-                  total_expenses:
-                    type: number
-                  total_bills:
-                    type: number
-                  accounts:
+                  monthly_summary:
+                    type: object
+                  upcoming_bills:
                     type: array
                     items:
                       type: object
-                      properties:
-                        name:
-                          type: string
-                        expenses:
-                          type: number
-                        bills:
-                          type: number
+securitySchemes:
+  BearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
