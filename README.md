@@ -41,31 +41,30 @@ flowchart LR
   SCH --> TW
   SCH --> SMTP
   AI --> OAI
-```
-
-## PostgreSQL Schema (DDL)
     JWT[PyJWT]
     AI[Insights Service]
     SCH[Scheduler/APScheduler]
-    RED[Redis]
+    SCH -->|Job Error| LOG[Logging]
+    SCH -->|Job Missed| LOG
+    LOG -->|Monitor| MON[Monitoring]
+    MON -->|Alert| ADM[Admin]
+    MON -->|Retry| SCH
+    ADM -->|Configure| SCH
   end
 
   subgraph Data
-    PG[(PostgreSQL)]
-    RD[(Redis)]
-  end
+- refresh_tokens (optional if rotating), audit_logs
 
-  subgraph ThirdParty
+## Redis Caching Policy
 - Keys
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
   - `user:{id}:categories` — 24h TTL
-  end
+  - `user:{id}:upcoming_bills` — 15 min TTL
+  - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
+- Invalidation
+  - On expense/bill create/update/delete -> delete affected monthly_summary, upcoming_bills, insights
+- Rate limiting (optional): `rl:{userId}:{endpoint}:{minute}` with short TTL
 
-  A -->|HTTPS| CDN --> API
-  API -->|Job Queue| RED
-  API -->|ORM| PG
-  API -->|Cache| RD
-  API -->|JWT verify| JWT
 ## API Endpoints
 OpenAPI: `backend/app/openapi.yaml`
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
