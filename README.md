@@ -47,7 +47,7 @@ flowchart LR
 - Bills: CRUD `/bills`, pay/mark `/bills/{id}/pay`
 - Reminders: CRUD `/reminders`, trigger `/reminders/run`
 - Insights: `/insights/monthly`, `/insights/budget-suggestion`
-- Insights: `/insights/weekly` (new)
+- Weekly Summary: `/insights/weekly`
 
 ## MVP UI/UX Plan
 - Auth screens: register/login.
