@@ -120,31 +120,9 @@
 +      targetPort: 5000
 +  type: LoadBalancer
 +
-+--- a/deploy/kubernetes/ingress.yaml
-+++ b/deploy/kubernetes/ingress.yaml
-@@ -0,0 +1,20 @@
-+apiVersion: networking.k8s.io/v1
-+kind: Ingress
-+metadata:
-+  name: finmind-ingress
-+  annotations:
-+    nginx.ingress.kubernetes.io/rewrite-target: /
-+spec:
-+  rules:
-+  - host: finmind.example.com
-+    http:
-+      paths:
-+      - path: /
-+        pathType: Prefix
-+        backend:
-+          service:
-+            name: finmind-service
-+            port:
-+              number: 80
-+
 +--- a/deploy/kubernetes/hpa.yaml
 +++ b/deploy/kubernetes/hpa.yaml
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,11 @@
 +apiVersion: autoscaling/v2
 +kind: HorizontalPodAutoscaler
 +metadata:
@@ -164,9 +142,31 @@
 +        type: Utilization
 +        averageUtilization: 50
 +
++--- a/deploy/kubernetes/ingress.yaml
++++ b/deploy/kubernetes/ingress.yaml
+@@ -0,0 +1,19 @@
++apiVersion: networking.k8s.io/v1
++kind: Ingress
++metadata:
++  name: finmind-ingress
++  annotations:
++    nginx.ingress.kubernetes.io/rewrite-target: /
++spec:
++  rules:
++  - host: finmind.example.com
++    http:
++      paths:
++      - path: /
++        pathType: Prefix
++        backend:
++          service:
++            name: finmind-service
++            port:
++              number: 80
++
 +--- a/deploy/kubernetes/redis-deployment.yaml
 +++ b/deploy/kubernetes/redis-deployment.yaml
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,27 @@
 +apiVersion: apps/v1
 +kind: Deployment
 +metadata:
@@ -191,12 +191,11 @@
 +          mountPath: /data
 +      volumes:
 +      - name: redis-storage
-+        persistentVolumeClaim:
-+          claimName: redis-pvc
++        emptyDir: {}
 +
 +--- a/deploy/kubernetes/redis-service.yaml
 +++ b/deploy/kubernetes/redis-service.yaml
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +apiVersion: v1
 +kind: Service
 +metadata:
@@ -209,5 +208,6 @@
 +      port: 6379
 +      targetPort: 6379
 +
-+--- a/deploy/kubernetes/redis-pvc.yaml
-+++ b/deploy/kubernetes/redis-pvc
++--- a/deploy/kubernetes/postgres-deployment.yaml
++++ b/deploy/kubernetes/postgres-deployment.yaml
+@@ -0,0 +1
