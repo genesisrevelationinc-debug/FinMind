@@ -3,33 +3,85 @@ info:
   title: FinMind API
   version: 1.0.0
 paths:
-  /api/dashboard/overview:
-    get:
-      summary: Get financial overview for multiple accounts
-      security:
-        - jwt: []
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+  /auth/login:
+    post:
+      summary: Login a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
       responses:
         '200':
-          description: A JSON object containing the financial overview
+          description: User logged in successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  user:
+                  access_token:
                     type: string
+  /api/dashboard/overview:
+    get:
+      summary: Get financial overview for the user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Financial overview data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
                   total_expenses:
                     type: number
                   total_bills:
                     type: number
-                  accounts:
+                  category_breakdown:
+                    type: object
+                  upcoming_bills:
                     type: array
                     items:
                       type: object
                       properties:
+                        id:
+                          type: integer
                         name:
                           type: string
-                        expenses:
+                        amount:
                           type: number
-                        bills:
-                          type: number
+                        due_date:
+                          type: string
+                          format: date
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
