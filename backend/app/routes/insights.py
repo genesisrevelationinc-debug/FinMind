@@ -30,7 +30,7 @@ def weekly_summary():
         "total_expenses": total_expenses,
         "total_bills": total_bills,
         "expenses": [{"id": exp.id, "amount": exp.amount, "category": exp.category, "date": exp.date.isoformat()} for exp in weekly_expenses],
-        "bills": [{"id": bill.id, "name": bill.name, "amount": bill.amount, "due_date": bill.due_date.isoformat()} for bill in weekly_bills]
+        "bills": [{"id": bill.id, "amount": bill.amount, "name": bill.name, "due_date": bill.due_date.isoformat()} for bill in weekly_bills]
     }
 
     return jsonify(summary)
