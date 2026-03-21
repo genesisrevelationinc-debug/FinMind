@@ -15,7 +15,7 @@ class Expense(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(80), nullable=False)
-    notes = db.Column(db.String(200))
+    notes = db.Column(db.String(200), nullable=True)
     date = db.Column(db.Date, nullable=False)
 
 class Bill(db.Model):
@@ -27,9 +27,3 @@ class Bill(db.Model):
     due_date = db.Column(db.Date, nullable=False)
     channel = db.Column(db.String(20), nullable=False)
     paid = db.Column(db.Boolean, default=False)
-
-class Reminder(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    message = db.Column(db.String(200), nullable=False)
-    trigger_date = db.Column(db.Date, nullable=False)
