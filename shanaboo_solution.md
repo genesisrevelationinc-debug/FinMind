@@ -152,10 +152,6 @@
 +  annotations:
 +    nginx.ingress.kubernetes.io/rewrite-target: /
 +spec:
-+  tls:
-+  - hosts:
-+    - finmind.example.com
-+    secretName: finmind-tls
 +  rules:
 +  - host: finmind.example.com
 +    http:
@@ -170,7 +166,7 @@
 +
 +--- a/deploy/kubernetes/redis-deployment.yaml
 +++ b/deploy/kubernetes/redis-deployment.yaml
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,26 @@
 +apiVersion: apps/v1
 +kind: Deployment
 +metadata:
@@ -199,7 +195,7 @@
 +
 +--- a/deploy/kubernetes/redis-service.yaml
 +++ b/deploy/kubernetes/redis-service.yaml
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,14 @@
 +apiVersion: v1
 +kind: Service
 +metadata:
@@ -212,4 +208,6 @@
 +      port: 6379
 +      targetPort: 6379
 +
-+--- a
++--- a/deploy/kubernetes/postgres-deployment.yaml
++++ b/deploy/kubernetes/postgres-deployment.yaml
+@@ -0,0 +1
