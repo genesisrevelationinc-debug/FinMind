@@ -42,22 +42,20 @@ flowchart LR
   SCH --> SMTP
   AI --> OAI
 ```
-  API -->|reminder jobs| SCH
-  SCH --> TW
-  SCH --> SMTP
-  SCH --> DB
-  DB -->|monthly summary| API
-  DB -->|categories| API
-  DB -->|upcoming bills| API
-  DB -->|insights| API
-  AI --> OAI
 
-- refresh_tokens (optional if rotating), audit_logs
+## PostgreSQL Schema (DDL)
+See `backend/app/db/schema.sql`. Key tables:
+- users, categories, expenses, bills, reminders
+- ad_impressions, subscription_plans, user_subscriptions
+- Reminders: CRUD `/reminders`, trigger `/reminders/run`
+- Insights: `/insights/monthly`, `/insights/budget-suggestion`
 
-## Redis Caching Policy
-- Keys
-  - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
-  - `user:{id}:categories` — 24h TTL
+- **Dashboard:**
+  - Multi-account financial overview `/api/dashboard/overview`
+
+## MVP UI/UX Plan
+- Auth screens: register/login.
+- Dashboard:
   - `user:{id}:upcoming_bills` — 15 min TTL
   - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
 - Invalidation
