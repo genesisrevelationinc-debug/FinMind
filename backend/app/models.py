@@ -1,39 +1,29 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship
-from sqlalchemy import ForeignKey
 
 db = SQLAlchemy()
 
 class User(db.Model):
-    categories = relationship('Category', back_populates='user')
-    reminders = relationship('Reminder', back_populates='user')
-
-class Account(db.Model):
-    __tablename__ = 'accounts'
-
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, ForeignKey('users.id'), nullable=False)
-    balance = db.Column(db.Float, default=0.0)
-    currency = db.Column(db.String(10), default='USD')
-    transactions = relationship('Transaction', back_populates='account')
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    expenses = db.relationship('Expense', backref='user', lazy=True)
+    bills = db.relationship('Bill', backref='user', lazy=True)
 
-    user = relationship('User', back_populates='accounts')
-
-class Transaction(db.Model):
-    __tablename__ = 'transactions'
-
+class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, ForeignKey('accounts.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    description = db.Column(db.String(255))
-    date = db.Column(db.DateTime, default=db.func.current_timestamp())
+    category = db.Column(db.String(80), nullable=False)
+    notes = db.Column(db.String(200), nullable=True)
+    date = db.Column(db.Date, nullable=False)
 
-    account = relationship('Account', back_populates='transactions')
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "amount": self.amount,
-            "description": self.description,
-            "date": self.date.isoformat()
-        }
+class Bill(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    name = db.Column(db.String(80), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    cadence = db.Column(db.String(20), nullable=False)
+    due_date = db.Column(db.Date, nullable=False)
+    channel = db.Column(db.String(20), nullable=False)
+    paid = db.Column(db.Boolean, default=False)
