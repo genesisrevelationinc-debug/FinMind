@@ -46,16 +46,19 @@ flowchart LR
 ## PostgreSQL Schema (DDL)
 See `backend/app/db/schema.sql`. Key tables:
 - users, categories, expenses, bills, reminders
-- ad_impressions, subscription_plans, user_subscriptions
 - Reminders: CRUD `/reminders`, trigger `/reminders/run`
 - Insights: `/insights/monthly`, `/insights/budget-suggestion`
 
-- **Dashboard:**
-  - Multi-account financial overview `/api/dashboard/overview`
+## Multi-Account Financial Overview Dashboard
+- Endpoint: `/api/dashboard/overview`
+- Method: `GET`
+- Security: Bearer Token Authentication
+- Response: JSON object containing total expenses, total bills, and upcoming bills.
 
 ## MVP UI/UX Plan
 - Auth screens: register/login.
 - Dashboard:
+  - `user:{id}:categories` — 24h TTL
   - `user:{id}:upcoming_bills` — 15 min TTL
   - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
 - Invalidation
