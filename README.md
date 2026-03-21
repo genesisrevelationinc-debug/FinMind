@@ -44,28 +44,30 @@ flowchart LR
 ```
 
 ## PostgreSQL Schema (DDL)
-    JWT[PyJWT]
-    AI[Insights Service]
-    SCH[Scheduler/APScheduler]
-    RED[Redis]
-  end
+See `backend/app/db/schema.sql`. Key tables:
+- users, categories, expenses, bills, reminders
+- ad_impressions, subscription_plans, user_subscriptions
+- refresh_tokens (optional if rotating), audit_logs
 
-  subgraph Data
-    PG[(PostgreSQL)]
-    RD[(Redis)]
-  end
-
-  subgraph ThirdParty
+## Redis Caching Policy
 - Keys
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
-  - `user:{id}:categories` — 24h TTL
-  end
+- Insights: `/insights/monthly`, `/insights/budget-suggestion`
 
-  A -->|HTTPS| CDN --> API
-  API -->|Job Queue| RED
-  API -->|ORM| PG
-  API -->|Cache| RD
-  API -->|JWT verify| JWT
+## MVP UI/UX Plan
+- **Background Jobs**
+  - Reminders are sent via email or WhatsApp at scheduled times.
+  - Jobs are retried with exponential backoff in case of failure.
+  - Job failures are logged for monitoring.
+- **Monitoring**
+  - Job execution is logged.
+  - Failed jobs are retried.
+  - Job scheduling is managed by APScheduler.
+
+- Auth screens: register/login.
+- Dashboard:
+  - Monthly spend chart, category breakdown donut.
+
 ## API Endpoints
 OpenAPI: `backend/app/openapi.yaml`
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
