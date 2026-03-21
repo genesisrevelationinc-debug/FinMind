@@ -41,6 +41,7 @@ flowchart LR
   SCH --> TW
   SCH --> SMTP
   AI --> OAI
+```
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
 - Expenses: CRUD `/expenses`
 - Bills: CRUD `/bills`, pay/mark `/bills/{id}/pay`
@@ -51,8 +52,6 @@ flowchart LR
 ## MVP UI/UX Plan
 - Auth screens: register/login.
 - Dashboard:
-  - Monthly spend chart, category breakdown donut.
-- refresh_tokens (optional if rotating), audit_logs
 
 ## Redis Caching Policy
 - Keys
