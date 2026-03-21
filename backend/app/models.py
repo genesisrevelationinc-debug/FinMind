@@ -1,32 +1,29 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token
-from datetime import datetime, timedelta
+
+db = SQLAlchemy()
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    accounts = relationship('Account', backref='user', lazy=True)
-    password_hash = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-        return check_password_hash(self.password_hash, password)
-
-class Account(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    name = db.Column(db.String(80), nullable=False)
-    balance = db.Column(db.Float, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'balance': self.balance,
-            'created_at': self.created_at.isoformat()
-        }
+    password_hash = db.Column(db.String(128), nullable=False)
+    expenses = db.relationship('Expense', backref='user', lazy=True)
+    bills = db.relationship('Bill', backref='user', lazy=True)
 
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(80), nullable=False)
+    notes = db.Column(db.String(200), nullable=True)
+    date = db.Column(db.Date, nullable=False)
+
+class Bill(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    name = db.Column(db.String(80), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    cadence = db.Column(db.String(20), nullable=False)
+    due_date = db.Column(db.Date, nullable=False)
+    channel = db.Column(db.String(20), nullable=False)
+    paid = db.Column(db.Boolean, default=False)
