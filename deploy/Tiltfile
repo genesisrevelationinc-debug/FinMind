@@ -1,26 +1,27 @@
-k8s_yaml('k8s/*.yaml')
+k8s_yaml('k8s/backend-deployment.yaml')
+k8s_yaml('k8s/frontend-deployment.yaml')
+k8s_yaml('k8s/db-deployment.yaml')
+k8s_yaml('k8s/redis-deployment.yaml')
+k8s_yaml('k8s/ingress.yaml')
 
-docker_build('finmind-backend', './app')
+docker_build('backend', './backend')
+docker_build('frontend', './frontend')
 
-k8s_resource('finmind-backend', port_forwards=8000)
+k8s_resource('backend', port_forwards=5000)
+k8s_resource('frontend', port_forwards=3000)
 
-local_resource(
-    'db',
-    'docker run -d --name finmind-db -e POSTGRES_USER=finmind -e POSTGRES_PASSWORD=finmind -e POSTGRES_DB=finmind postgres:13',
-    resource_deps=['finmind-backend'],
-    restart_on=['k8s/*.yaml'],
-    port_forwards=5432
+local_resource('db', 'docker run -d --name finmind-db -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=finmind postgres:13')
+local_resource('redis', 'docker run -d --name finmind-redis redis:6')
+
+allow_k8s_contexts('minikube', 'docker-desktop')
+
+watch_settings = WatchSettings(
+    trigger_mode='notify',
+    ignore=['*.pyc', '*.log', '*.tmp', '.git', '.venv', 'node_modules']
 )
 
-local_resource(
-    'redis',
-    'docker run -d --name finmind-redis redis:6',
-    resource_deps=['finmind-backend'],
-    restart_on=['k8s/*.yaml'],
-    port_forwards=6379
-)
+watch_file('backend/app', watch_settings)
+watch_file('frontend/src', watch_settings)
 
-watch_settings(
-    watch_dirs=['app'],
-    ignore=['*.pyc', '__pycache__'],
-)
+live_update('backend', sync=['backend/app -> /app'])
+live_update('frontend', sync=['frontend/src -> /app/src'])
