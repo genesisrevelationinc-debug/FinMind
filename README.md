@@ -39,23 +39,23 @@ flowchart LR
   API -->|JWT verify| JWT
   API -->|reminder jobs| SCH
   SCH --> TW
-  SCH --> SMTP
-  AI --> OAI
-```
-
-## PostgreSQL Schema (DDL)
-See `backend/app/db/schema.sql`. Key tables:
-- users, categories, expenses, bills, reminders
-- ad_impressions, subscription_plans, user_subscriptions
 - Reminders: CRUD `/reminders`, trigger `/reminders/run`
 - Insights: `/insights/monthly`, `/insights/budget-suggestion`
 
 - **Dashboard:**
-  - Multi-account financial overview `/api/dashboard/overview`
+  - Overview: `/api/dashboard/overview` (JWT required)
 
 ## MVP UI/UX Plan
 - Auth screens: register/login.
 - Dashboard:
+- users, categories, expenses, bills, reminders
+- ad_impressions, subscription_plans, user_subscriptions
+- refresh_tokens (optional if rotating), audit_logs
+
+## Redis Caching Policy
+- Keys
+  - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
+  - `user:{id}:categories` — 24h TTL
   - `user:{id}:upcoming_bills` — 15 min TTL
   - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
 - Invalidation
