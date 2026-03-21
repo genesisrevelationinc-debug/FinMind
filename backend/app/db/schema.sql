@@ -1,30 +1,22 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(150) UNIQUE NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
-    password_hash VARCHAR(128) NOT NULL
+    username VARCHAR(255) UNIQUE NOT NULL,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
-    name VARCHAR(150) NOT NULL,
-    balance NUMERIC NOT NULL
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    balance NUMERIC(10, 2) DEFAULT 0.0,
+    currency VARCHAR(10) DEFAULT 'USD',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE expenses (
+CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
-    category VARCHAR(150) NOT NULL,
-    notes TEXT,
-    date DATE NOT NULL,
-    account_id INTEGER REFERENCES accounts(id) ON DELETE SET NULL
+    account_id INT REFERENCES accounts(id) ON DELETE CASCADE,
+    amount NUMERIC(10, 2) NOT NULL,
+    description VARCHAR(255),
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE TABLE bills (
-    cadence VARCHAR(50) NOT NULL,
-    due_date DATE NOT NULL,
-    channel VARCHAR(50),
-    account_id INTEGER REFERENCES accounts(id) ON DELETE SET NULL
-);
-
-CREATE TABLE reminders (
