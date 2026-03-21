@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..extensions import db
-from ..models import User, Expense, Bill
+from ..models import db, User, Expense, Bill
+from ..extensions import cache
 
 bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 
@@ -13,18 +13,28 @@ def get_financial_overview():
     if not user:
         return jsonify({"message": "User not found"}), 404
 
-    expenses = Expense.query.filter_by(user_id=user_id).all()
-    bills = Bill.query.filter_by(user_id=user_id).all()
+    # Fetch cached data or compute if not available
+    monthly_summary_key = f"user:{user_id}:monthly_summary:{request.args.get('month', 'current')}"
+    monthly_summary = cache.get(monthly_summary_key)
+    if not monthly_summary:
+        monthly_summary = compute_monthly_summary(user_id, request.args.get('month', 'current'))
+        cache.set(monthly_summary_key, monthly_summary, timeout=1800)  # 30 minutes
 
-    total_expenses = sum(expense.amount for expense in expenses)
-    total_bills = sum(bill.amount for bill in bills)
+    upcoming_bills_key = f"user:{user_id}:upcoming_bills"
+    upcoming_bills = cache.get(upcoming_bills_key)
+    if not upcoming_bills:
+        upcoming_bills = compute_upcoming_bills(user_id)
+        cache.set(upcoming_bills_key, upcoming_bills, timeout=900)  # 15 minutes
 
     return jsonify({
-        "user": user.username,
-        "total_expenses": total_expenses,
-        "total_bills": total_bills,
-        "accounts": [
-            {"name": "Main Account", "expenses": total_expenses, "bills": total_bills}
-            # Add more accounts as needed
-        ]
-    }), 200
+        "monthly_summary": monthly_summary,
+        "upcoming_bills": upcoming_bills
+    })
+
+def compute_monthly_summary(user_id, month):
+    # Placeholder for actual computation logic
+    return {"total_expenses": 1000, "categories": {"food": 200, "transport": 150}}
+
+def compute_upcoming_bills(user_id):
+    # Placeholder for actual computation logic
+    return [{"name": "Rent", "amount": 1200, "due_date": "2023-10-01", "paid": False}]
