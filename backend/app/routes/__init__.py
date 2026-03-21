@@ -1,7 +1,11 @@
 from flask import Blueprint
-from . import multi_account
-api_bp = Blueprint('api', __name__)
-from . import expenses
-from . import bills
-from . import reminders
-api_bp.register_blueprint(multi_account.bp, url_prefix='/multi-account')
+from . import auth, expenses, bills, reminders, insights, dashboard
+
+api_bp = Blueprint('api', __name__, url_prefix='/api')
+
+api_bp.register_blueprint(auth.bp)
+api_bp.register_blueprint(expenses.bp)
+api_bp.register_blueprint(bills.bp)
+api_bp.register_blueprint(reminders.bp)
+api_bp.register_blueprint(insights.bp)
+api_bp.register_blueprint(dashboard.bp)
