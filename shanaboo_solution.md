@@ -64,7 +64,7 @@
 +
 +--- a/deploy/kubernetes/deployment.yaml
 +++ b/deploy/kubernetes/deployment.yaml
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,54 @@
 +apiVersion: apps/v1
 +kind: Deployment
 +metadata:
@@ -81,7 +81,7 @@
 +    spec:
 +      containers:
 +      - name: finmind
-+        image: finmind:latest
++        image: your-docker-repo/finmind:latest
 +        ports:
 +        - containerPort: 5000
 +        env:
@@ -106,7 +106,7 @@
 +
 +--- a/deploy/kubernetes/service.yaml
 +++ b/deploy/kubernetes/service.yaml
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,15 @@
 +apiVersion: v1
 +kind: Service
 +metadata:
@@ -144,7 +144,7 @@
 +
 +--- a/deploy/kubernetes/hpa.yaml
 +++ b/deploy/kubernetes/hpa.yaml
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,13 @@
 +apiVersion: autoscaling/v2
 +kind: HorizontalPodAutoscaler
 +metadata:
@@ -166,7 +166,7 @@
 +
 +--- a/deploy/kubernetes/redis-deployment.yaml
 +++ b/deploy/kubernetes/redis-deployment.yaml
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,33 @@
 +apiVersion: apps/v1
 +kind: Deployment
 +metadata:
@@ -191,7 +191,8 @@
 +          mountPath: /data
 +      volumes:
 +      - name: redis-storage
-+        emptyDir: {}
++        persistentVolumeClaim:
++          claimName: redis-pvc
 +
 +--- a/deploy/kubernetes/redis-service.yaml
 +++ b/deploy/kubernetes/redis-service.yaml
@@ -208,7 +209,5 @@
 +      port: 6379
 +      targetPort: 6379
 +
-+--- a/deploy/kubernetes/postgres-deployment.yaml
-+++ b/deploy/kubernetes/postgres-deployment.yaml
-@@ -0,0 +1,30 @@
-+api
++--- a/deploy/kubernetes/redis-pvc.yaml
++++ b/deploy/kubernetes/redis-pvc
