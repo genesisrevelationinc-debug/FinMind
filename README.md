@@ -42,28 +42,27 @@ flowchart LR
   SCH --> SMTP
   AI --> OAI
 ```
+- Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
+- Expenses: CRUD `/expenses`
+- Bills: CRUD `/bills`, pay/mark `/bills/{id}/pay`
+- Reminders: CRUD `/reminders`, trigger `/reminders/run`
+- Insights: `/insights/monthly`, `/insights/budget-suggestion`
+- Weekly Summary: `/insights/weekly`
 
-## PostgreSQL Schema (DDL)
-See `backend/app/db/schema.sql`. Key tables:
-- users, categories, expenses, bills, reminders
-- ad_impressions, subscription_plans, user_subscriptions
-- refresh_tokens (optional if rotating), audit_logs
+## MVP UI/UX Plan
+- Auth screens: register/login.
+- Dashboard:
 
 ## Redis Caching Policy
 - Keys
   - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
   - `user:{id}:categories` — 24h TTL
-- Reminders: CRUD `/reminders`, trigger `/reminders/run`
-- Insights: `/insights/monthly`, `/insights/budget-suggestion`
+  - `user:{id}:upcoming_bills` — 15 min TTL
+  - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
+- Invalidation
+  - On expense/bill create/update/delete -> delete affected monthly_summary, upcoming_bills, insights
+- Rate limiting (optional): `rl:{userId}:{endpoint}:{minute}` with short TTL
 
-- Weekly Financial Summary: `/insights/weekly`
-  - Generates a weekly summary highlighting trends and insights.
-  - Includes total expenses and bills for the week.
-  - Lists all expenses and bills with details.
-
-## MVP UI/UX Plan
-- Auth screens: register/login.
-- Dashboard:
 ## API Endpoints
 OpenAPI: `backend/app/openapi.yaml`
 - Auth: `/auth/register`, `/auth/login`, `/auth/refresh`
