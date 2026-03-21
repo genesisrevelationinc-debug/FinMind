@@ -1,11 +1,18 @@
-from .extensions import db
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+from ..extensions import scheduler
+from ..routes.reminders import schedule_reminder_jobs
 
-class Reminder(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    due_date = db.Column(db.DateTime, nullable=False)
-    channel = db.Column(db.String(50), nullable=False)
-    sent = db.Column(db.Boolean, default=False)
+db = SQLAlchemy()
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'message': self.message,
+            'due_date': self.due_date.isoformat(),
+            'sent': self.sent
+        }
 
-    def __repr__(self):
-        return f'<Reminder {self.name}>'
+    def is_due(self):
+        return datetime.utcnow() >= self.due_date
+
+schedule_reminder_jobs()
