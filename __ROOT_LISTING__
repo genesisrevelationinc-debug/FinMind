@@ -5,3 +5,9 @@
 [file] .gitignore
 [file] .pre-commit-config.yaml
 [file] CONTRIBUTING.md
+[file] LICENSE
+[file] README.md
+[file] requirements.txt
+[dir] app
+[dir] deploy
+[file] docker-compose.yml
