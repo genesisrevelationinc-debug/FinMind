@@ -64,7 +64,7 @@
 +
 +--- a/deploy/kubernetes/deployment.yaml
 +++ b/deploy/kubernetes/deployment.yaml
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,55 @@
 +apiVersion: apps/v1
 +kind: Deployment
 +metadata:
@@ -106,7 +106,7 @@
 +
 +--- a/deploy/kubernetes/service.yaml
 +++ b/deploy/kubernetes/service.yaml
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,14 @@
 +apiVersion: v1
 +kind: Service
 +metadata:
@@ -122,7 +122,7 @@
 +
 +--- a/deploy/kubernetes/hpa.yaml
 +++ b/deploy/kubernetes/hpa.yaml
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,10 @@
 +apiVersion: autoscaling/v2
 +kind: HorizontalPodAutoscaler
 +metadata:
@@ -144,7 +144,7 @@
 +
 +--- a/deploy/kubernetes/ingress.yaml
 +++ b/deploy/kubernetes/ingress.yaml
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,16 @@
 +apiVersion: networking.k8s.io/v1
 +kind: Ingress
 +metadata:
@@ -152,10 +152,6 @@
 +  annotations:
 +    nginx.ingress.kubernetes.io/rewrite-target: /
 +spec:
-+  tls:
-+  - hosts:
-+    - finmind.example.com
-+    secretName: finmind-tls
 +  rules:
 +  - host: finmind.example.com
 +    http:
@@ -170,7 +166,7 @@
 +
 +--- a/deploy/kubernetes/redis-deployment.yaml
 +++ b/deploy/kubernetes/redis-deployment.yaml
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,28 @@
 +apiVersion: apps/v1
 +kind: Deployment
 +metadata:
@@ -195,11 +191,12 @@
 +          mountPath: /data
 +      volumes:
 +      - name: redis-storage
-+        emptyDir: {}
++        persistentVolumeClaim:
++          claimName: redis-pvc
 +
 +--- a/deploy/kubernetes/redis-service.yaml
 +++ b/deploy/kubernetes/redis-service.yaml
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,14 @@
 +apiVersion: v1
 +kind: Service
 +metadata:
@@ -212,4 +209,5 @@
 +      port: 6379
 +      targetPort: 6379
 +
-+--- a
++--- a/deploy/kubernetes/redis-pvc.yaml
++++ b/deploy/kubernetes/redis-pvc
