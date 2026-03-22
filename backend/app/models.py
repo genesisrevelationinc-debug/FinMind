@@ -1,29 +1,25 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
 
 db = SQLAlchemy()
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
-    expenses = db.relationship('Expense', backref='user', lazy=True)
-    bills = db.relationship('Bill', backref='user', lazy=True)
+    categories = relationship('Category', back_populates='user')
+    expenses = relationship('Expense', back_populates='user')
+    bills = relationship('Bill', back_populates='user')
 
-class Expense(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    category = db.Column(db.String(80), nullable=False)
-    notes = db.Column(db.String(200), nullable=True)
-    date = db.Column(db.Date, nullable=False)
+class Account(db.Model):
+    __tablename__ = 'accounts'
 
-class Bill(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    name = db.Column(db.String(80), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    cadence = db.Column(db.String(20), nullable=False)
-    due_date = db.Column(db.Date, nullable=False)
-    channel = db.Column(db.String(20), nullable=False)
-    paid = db.Column(db.Boolean, default=False)
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    name = Column(String(100), nullable=False)
+    balance = Column(Float, default=0.0)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'name': self.name,
+            'balance': self.balance
+        }
