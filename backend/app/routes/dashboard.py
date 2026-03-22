@@ -25,6 +25,6 @@ def get_financial_overview():
         "total_bills": total_bills,
         "accounts": [
             {"name": "Main Account", "expenses": total_expenses, "bills": total_bills}
-            # Extend this to include multiple accounts if needed
+            # Add more accounts as needed
         ]
     }), 200
