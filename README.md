@@ -47,20 +47,18 @@ flowchart LR
 See `backend/app/db/schema.sql`. Key tables:
 - users, categories, expenses, bills, reminders
 - ad_impressions, subscription_plans, user_subscriptions
-- refresh_tokens (optional if rotating), audit_logs
+- Reminders: CRUD `/reminders`, trigger `/reminders/run`
+- Insights: `/insights/monthly`, `/insights/budget-suggestion`
 
-## Redis Caching Policy
-- Keys
-  - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
-SCH --> TW
-SCH --> SMTP
-AI --> OAI
+- **Dashboard:**
+  - Multi-account financial overview `/api/dashboard/overview`
 
-## Multi-account Financial Overview Dashboard
-- Endpoint: `/api/dashboard/overview`
-- Description: Provides a financial overview of the user's accounts, including total expenses and bills.
-
-
+## MVP UI/UX Plan
+- Auth screens: register/login.
+- Dashboard:
+  - `user:{id}:upcoming_bills` — 15 min TTL
+  - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
+- Invalidation
   - On expense/bill create/update/delete -> delete affected monthly_summary, upcoming_bills, insights
 - Rate limiting (optional): `rl:{userId}:{endpoint}:{minute}` with short TTL
 
