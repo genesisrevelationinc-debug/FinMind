@@ -38,25 +38,24 @@ flowchart LR
   API -->|Cache| RD
   API -->|JWT verify| JWT
   API -->|reminder jobs| SCH
-- Reminders: CRUD `/reminders`, trigger `/reminders/run`
-- Insights: `/insights/monthly`, `/insights/budget-suggestion`
+  SCH --> TW
+  SCH --> SMTP
+  AI --> OAI
+```
 
-- Multi-account management:
-  - List accounts: `/accounts`
-  - Add account: `/accounts` (POST)
-  - Update account: `/accounts/<int:account_id>` (PUT)
-
-## MVP UI/UX Plan
-- Auth screens: register/login.
+## PostgreSQL Schema (DDL)
 See `backend/app/db/schema.sql`. Key tables:
 - users, categories, expenses, bills, reminders
 - ad_impressions, subscription_plans, user_subscriptions
-- refresh_tokens (optional if rotating), audit_logs
+- Reminders: CRUD `/reminders`, trigger `/reminders/run`
+- Insights: `/insights/monthly`, `/insights/budget-suggestion`
 
-## Redis Caching Policy
-- Keys
-  - `user:{id}:monthly_summary:{yyyy-mm}` — 30 min TTL
-  - `user:{id}:categories` — 24h TTL
+- **Dashboard:**
+  - Multi-account financial overview `/api/dashboard/overview`
+
+## MVP UI/UX Plan
+- Auth screens: register/login.
+- Dashboard:
   - `user:{id}:upcoming_bills` — 15 min TTL
   - `insights:{id}` — 24h TTL (invalidate on new expense/bill)
 - Invalidation
