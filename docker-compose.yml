@@ -153,7 +153,7 @@ services:
       - "5000:5000"
     environment:
       - FLASK_ENV=production
-      - DATABASE_URL=postgres://user:password@db:5432/finmind
+      - DATABASE_URL=postgresql://user:password@db:5432/finmind
       - REDIS_URL=redis://redis:6379/0
     depends_on:
       - db
