@@ -1,140 +1,51 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: finmind-web
+  name: finmind-backend
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: finmind-web
+      app: finmind-backend
   template:
     metadata:
       labels:
-        app: finmind-web
+        app: finmind-backend
     spec:
       containers:
-      - name: finmind-web
-        image: finmind-web:latest
-        ports:
-        - containerPort: 5000
-        env:
-        - name: FLASK_ENV
-          value: "production"
-        - name: DATABASE_URL
-          value: "postgres://user:password@finmind-db:5432/finmind"
-        - name: REDIS_URL
-          value: "redis://finmind-redis:6379/0"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 5
-          periodSeconds: 10
+        - name: finmind-backend
+          image: finmind-backend:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: FLASK_ENV
+              value: "production"
+            - name: DATABASE_URL
+              value: "postgres://user:password@finmind-db:5432/finmind"
+            - name: REDIS_URL
+              value: "redis://finmind-redis:6379/0"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: finmind-web
+  name: finmind-backend
 spec:
   selector:
-    app: finmind-web
+    app: finmind-backend
   ports:
     - protocol: TCP
       port: 80
       targetPort: 5000
   type: LoadBalancer
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: finmind-db-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: finmind-db
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: finmind-db
-  template:
-    metadata:
-      labels:
-        app: finmind-db
-    spec:
-      containers:
-      - name: finmind-db
-        image: postgres:13
-        ports:
-        - containerPort: 5432
-        env:
-        - name: POSTGRES_USER
-          value: "user"
-        - name: POSTGRES_PASSWORD
-          value: "password"
-        - name: POSTGRES_DB
-          value: "finmind"
-        volumeMounts:
-        - mountPath: /var/lib/postgresql/data
-          name: finmind-db-storage
-      volumes:
-      - name: finmind-db-storage
-        persistentVolumeClaim:
-          claimName: finmind-db-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: finmind-db
-spec:
-  selector:
-    app: finmind-db
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: finmind-redis
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: finmind-redis
-  template:
-    metadata:
-      labels:
-        app: finmind-redis
-    spec:
-      containers:
-      - name: finmind-redis
-        image: redis:6
-        ports:
-        - containerPort: 6379
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: finmind-redis
-spec:
-  selector:
-    app: finmind-redis
-  ports:
-    - protocol: TCP
-      port: 6379
-      targetPort: 6379
