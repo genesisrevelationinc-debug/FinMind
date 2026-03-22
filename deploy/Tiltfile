@@ -5,16 +5,18 @@ docker_build('finmind-web', './app')
 
 local_resource(
     'db',
-    'docker run -d --name finmind-db -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=finmind postgres:13',
+    cmd='docker run -d --name finmind-db -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=finmind postgres:13',
     resource_deps=['finmind-web'],
-    restart_on=['k8s/deployment.yaml'],
-    stop='docker stop finmind-db && docker rm finmind-db'
 )
 
 local_resource(
     'redis',
-    'docker run -d --name finmind-redis redis:6',
+    cmd='docker run -d --name finmind-redis redis:6',
     resource_deps=['finmind-web'],
-    restart_on=['k8s/deployment.yaml'],
-    stop='docker stop finmind-redis && docker rm finmind-redis'
+)
+
+allow_k8s_contexts('minikube', 'docker-desktop')
+
+watch_settings = WatchSettings(
+    ignore=['*.pyc', '*.log', '*.tmp'],
 )
