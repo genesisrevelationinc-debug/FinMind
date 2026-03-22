@@ -22,7 +22,7 @@ class Milestone(db.Model):
     milestone_name = Column(String(100), nullable=False)
     amount = Column(Float, nullable=False)
     achieved = Column(Boolean, default=False)
-    achieved_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
     savings_goal = relationship("SavingsGoal", back_populates="milestones")
 
 User.savings_goals = relationship("SavingsGoal", order_by=SavingsGoal.id, back_populates="user")
