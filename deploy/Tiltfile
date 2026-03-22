@@ -1,28 +1,28 @@
-k8s_yaml('k8s/deployment.yaml')
-k8s_resource('finmind-web', port_forwards=5000)
+k8s_yaml('k8s/*.yaml')
 
-docker_build('finmind-web', './app')
+docker_build('finmind-backend', './app')
 
-local_resource(
-    'db',
-    'docker run -d --name finmind-db -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=finmind postgres:13',
-    resource_deps=['finmind-web'],
-    restart_on=['./backend/app/db/schema.sql']
-)
+k8s_resource('finmind-backend', port_forwards=5000)
+
+k8s_resource('finmind-db', port_forwards=5432)
+
+k8s_resource('finmind-redis', port_forwards=6379)
 
 local_resource(
-    'redis',
-    'docker run -d --name finmind-redis redis:6',
-    resource_deps=['finmind-web'],
+    'apply-migrations',
+    cmd='docker-compose run web flask db upgrade',
+    deps=['./app/migrations'],
+    resource_deps=['finmind-db'],
 )
 
-allow_k8s_contexts('docker-desktop')
-
-watch_settings(
-    watch_file_changes=True,
-    watch_dirs=['./app'],
+local_resource(
+    'seed-db',
+    cmd='docker-compose run web flask seed',
+    resource_deps=['apply-migrations'],
 )
 
-update_settings(
-    delete_unused=True,
+local_resource(
+    'run-tests',
+    cmd='docker-compose run web pytest',
+    resource_deps=['apply-migrations'],
 )
