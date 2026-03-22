@@ -2,66 +2,49 @@ from flask import Blueprint, request, jsonify
 from ..models import db, SavingsGoal, Milestone
 from ..extensions import jwt_required, get_jwt_identity
 
-savings_goals_bp = Blueprint('savings_goals', __name__, url_prefix='/savings_goals')
+bp = Blueprint('savings_goals', __name__, url_prefix='/savings-goals')
 
-@savings_goals_bp.route('/', methods=['POST'])
+@bp.route('/', methods=['POST'])
 @jwt_required()
 def create_savings_goal():
     data = request.get_json()
     user_id = get_jwt_identity()
-    new_goal = SavingsGoal(
-        user_id=user_id,
-        goal_name=data['goal_name'],
-        target_amount=data['target_amount'],
-        start_date=data.get('start_date'),
-        end_date=data.get('end_date')
-    )
+    new_goal = SavingsGoal(user_id=user_id, name=data['name'], target_amount=data['target_amount'], description=data.get('description'))
     db.session.add(new_goal)
     db.session.commit()
-    return jsonify({'message': 'Savings goal created successfully'}), 201
+    return jsonify({'id': new_goal.id, 'name': new_goal.name, 'target_amount': new_goal.target_amount, 'current_amount': new_goal.current_amount, 'description': new_goal.description}), 201
 
-@savings_goals_bp.route('/<int:goal_id>/milestones', methods=['POST'])
+@bp.route('/<int:goal_id>/milestones', methods=['POST'])
 @jwt_required()
 def create_milestone(goal_id):
     data = request.get_json()
-    new_milestone = Milestone(
-        savings_goal_id=goal_id,
-        milestone_name=data['milestone_name'],
-        amount=data['amount']
-    )
+    new_milestone = Milestone(savings_goal_id=goal_id, name=data['name'], amount=data['amount'], description=data.get('description'))
     db.session.add(new_milestone)
     db.session.commit()
-    return jsonify({'message': 'Milestone created successfully'}), 201
+    return jsonify({'id': new_milestone.id, 'name': new_milestone.name, 'amount': new_milestone.amount, 'description': new_milestone.description}), 201
 
-@savings_goals_bp.route('/<int:goal_id>', methods=['GET'])
+@bp.route('/<int:goal_id>', methods=['GET'])
 @jwt_required()
 def get_savings_goal(goal_id):
     goal = SavingsGoal.query.get_or_404(goal_id)
-    return jsonify({
-        'id': goal.id,
-        'goal_name': goal.goal_name,
-        'target_amount': goal.target_amount,
-        'current_amount': goal.current_amount,
-        'start_date': goal.start_date.isoformat(),
-        'end_date': goal.end_date.isoformat() if goal.end_date else None,
-        'milestones': [{'id': m.id, 'milestone_name': m.milestone_name, 'amount': m.amount, 'achieved': m.achieved} for m in goal.milestones]
-    })
+    milestones = [{'id': m.id, 'name': m.name, 'amount': m.amount, 'description': m.description} for m in goal.milestones]
+    return jsonify({'id': goal.id, 'name': goal.name, 'target_amount': goal.target_amount, 'current_amount': goal.current_amount, 'description': goal.description, 'milestones': milestones})
 
-@savings_goals_bp.route('/<int:goal_id>/milestones/<int:milestone_id>', methods=['PUT'])
+@bp.route('/<int:goal_id>', methods=['PUT'])
 @jwt_required()
-def update_milestone(goal_id, milestone_id):
+def update_savings_goal(goal_id):
     data = request.get_json()
-    milestone = Milestone.query.get_or_404(milestone_id)
-    milestone.milestone_name = data.get('milestone_name', milestone.milestone_name)
-    milestone.amount = data.get('amount', milestone.amount)
-    milestone.achieved = data.get('achieved', milestone.achieved)
+    goal = SavingsGoal.query.get_or_404(goal_id)
+    goal.name = data.get('name', goal.name)
+    goal.target_amount = data.get('target_amount', goal.target_amount)
+    goal.description = data.get('description', goal.description)
     db.session.commit()
-    return jsonify({'message': 'Milestone updated successfully'})
+    return jsonify({'id': goal.id, 'name': goal.name, 'target_amount': goal.target_amount, 'current_amount': goal.current_amount, 'description': goal.description})
 
-@savings_goals_bp.route('/<int:goal_id>/milestones/<int:milestone_id>', methods=['DELETE'])
+@bp.route('/<int:goal_id>', methods=['DELETE'])
 @jwt_required()
-def delete_milestone(goal_id, milestone_id):
-    milestone = Milestone.query.get_or_404(milestone_id)
-    db.session.delete(milestone)
+def delete_savings_goal(goal_id):
+    goal = SavingsGoal.query.get_or_404(goal_id)
+    db.session.delete(goal)
     db.session.commit()
-    return jsonify({'message': 'Milestone deleted successfully'})
+    return '', 204
