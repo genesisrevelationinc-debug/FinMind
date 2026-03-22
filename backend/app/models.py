@@ -11,7 +11,7 @@ class SavingsGoal(db.Model):
     goal_name = Column(String(100), nullable=False)
     target_amount = Column(Float, nullable=False)
     current_amount = Column(Float, default=0.0)
-    deadline = Column(DateTime, nullable=True)
+    due_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="savings_goals")
 
@@ -22,7 +22,7 @@ class Milestone(db.Model):
     milestone_name = Column(String(100), nullable=False)
     amount = Column(Float, nullable=False)
     achieved = Column(Boolean, default=False)
-    achieved_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
     savings_goal = relationship("SavingsGoal", back_populates="milestones")
 
 User.savings_goals = relationship("SavingsGoal", order_by=SavingsGoal.id, back_populates="user")
