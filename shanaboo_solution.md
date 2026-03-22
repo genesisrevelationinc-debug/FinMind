@@ -26,10 +26,9 @@
 +--- a/deploy/docker-compose.yml
 +++ b/deploy/docker-compose.yml
 @@ -1,11 +1,45 @@
--version: '3'
-+version: '3.8'
-+
-+services:
+ version: '3.8'
+ 
+ services:
 +  web:
 +    build: .
 +    command: gunicorn -b 0.0.0.0:5000 app.app:app
@@ -45,14 +44,14 @@
 +      - DATABASE_URL=postgresql://postgres:password@db:5432/finmind
 +      - REDIS_URL=redis://redis:6379/0
 +
-+  db:
-+    image: postgres:13
+   db:
+     image: postgres:13
+     environment:
+       POSTGRES_DB: finmind
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: password
 +    volumes:
-+      - postgres_data:/var/lib/postgresql/data
-+    environment:
-+      - POSTGRES_DB=finmind
-+      - POSTGRES_USER=postgres
-+      - POSTGRES_PASSWORD=password
++      - db_data:/var/lib/postgresql/data
 +
 +  redis:
 +    image: redis:6
@@ -60,12 +59,12 @@
 +      - redis_data:/data
 +
 +volumes:
-+  postgres_data:
++  db_data:
 +  redis_data:
 +
 +--- a/deploy/kubernetes/deployment.yaml
 +++ b/deploy/kubernetes/deployment.yaml
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,54 @@
 +apiVersion: apps/v1
 +kind: Deployment
 +metadata:
@@ -92,22 +91,22 @@
 +          value: "postgresql://postgres:password@finmind-db:5432/finmind"
 +        - name: REDIS_URL
 +          value: "redis://finmind-redis:6379/0"
++        livenessProbe:
++          httpGet:
++            path: /health
++            port: 5000
++          initialDelaySeconds: 30
++          periodSeconds: 10
 +        readinessProbe:
 +          httpGet:
 +            path: /health
 +            port: 5000
 +          initialDelaySeconds: 5
 +          periodSeconds: 10
-+        livenessProbe:
-+          httpGet:
-+            path: /health
-+            port: 5000
-+          initialDelaySeconds: 15
-+          periodSeconds: 20
 +
 +--- a/deploy/kubernetes/service.yaml
 +++ b/deploy/kubernetes/service.yaml
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,15 @@
 +apiVersion: v1
 +kind: Service
 +metadata:
@@ -123,7 +122,7 @@
 +
 +--- a/deploy/kubernetes/hpa.yaml
 +++ b/deploy/kubernetes/hpa.yaml
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,12 @@
 +apiVersion: autoscaling/v2
 +kind: HorizontalPodAutoscaler
 +metadata:
@@ -145,7 +144,7 @@
 +
 +--- a/deploy/kubernetes/ingress.yaml
 +++ b/deploy/kubernetes/ingress.yaml
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,20 @@
 +apiVersion: networking.k8s.io/v1
 +kind: Ingress
 +metadata:
@@ -153,6 +152,10 @@
 +  annotations:
 +    nginx.ingress.kubernetes.io/rewrite-target: /
 +spec:
++  tls:
++  - hosts:
++    - finmind.example.com
++    secretName: finmind-tls
 +  rules:
 +  - host: finmind.example.com
 +    http:
@@ -167,7 +170,7 @@
 +
 +--- a/deploy/kubernetes/redis-deployment.yaml
 +++ b/deploy/kubernetes/redis-deployment.yaml
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,24 @@
 +apiVersion: apps/v1
 +kind: Deployment
 +metadata:
@@ -194,22 +197,19 @@
 +      - name: redis-storage
 +        emptyDir: {}
 +
-+--- a/deploy/kubernetes/postgres-deployment.yaml
-+++ b/deploy/kubernetes/postgres-deployment.yaml
-@@ -0,0 +1,32 @@
-+apiVersion: apps/v1
-+kind: Deployment
++--- a/deploy/kubernetes/redis-service.yaml
++++ b/deploy/kubernetes/redis-service.yaml
+@@ -0,0 +1,13 @@
++apiVersion: v1
++kind: Service
 +metadata:
-+  name: finmind-db
++  name: finmind-redis
 +spec:
-+  replicas: 1
 +  selector:
-+    matchLabels:
-+      app: finmind-db
-+  template:
-+    metadata:
-+      labels:
-+        app: finmind-db
-+    spec:
-+      containers:
-+      - name: postgres
++    app: finmind-redis
++  ports:
++    - protocol: TCP
++      port: 6379
++      targetPort: 6379
++
++--- a
