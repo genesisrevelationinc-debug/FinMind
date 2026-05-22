@@ -1,53 +1,37 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+"""Authentication routes with login anomaly detection."""
+
+from flask import Blueprint, request, jsonify, g
 from datetime import datetime, timedelta
-from werkzeug.security import generate_password_hash, check_password_hash
-from app.models import User, db, AuditLog
-from app.extensions import jwt
-        return jsonify({"msg": "Bad username or password"}), 401
+import hashlib
+import hmac
+import os
+import json
+import time
 
-    user.last_login = datetime.utcnow()
-    user.login_attempts = 0
-    db.session.add(user)
-    db.session.commit()
+def get_client_ip():
+    if request.environ.get('HTTP_X_FORGED_FORGING'):
+        return request.environ.get('HTTP_X_FORGED_FORGING')
+    elif request.environ.get('HTTP_X_REAL_IP'):
+        return request.environ.get('HTTP_X_REAL_IP')
+    return request.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
 
-    access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=15))
-    refresh_token = create_refresh_token(identity=user.id)
+def get_user_agent():
+    return request.headers.get('User-Agent', 'Unknown')
 
-    return jsonify({"msg": "Bad username or password"}), 401
+def get_user_ip():
+    return request.environ.get('HTTP_X_FORGED_FORGING', get_client_ip())
 
-@auth.route('/login', methods=['POST'])
-def login():
-    user = User.query.filter_by(username=request.json.get('username')).first()
-    if not user or not check_password_hash(user.password_hash, request.json.get('password')):
-        user.login_attempts += 1
-        db.session.add(user)
-        db.session.commit()
-        if user.login_attempts >= 5:
-            audit_log = AuditLog(user_id=user.id, activity='Suspicious login attempt')
-            db.session.add(audit_log)
-            db.session.commit()
-            return jsonify({"msg": "Account temporarily locked due to suspicious activity"}), 403
-        return jsonify({"msg": "Bad username or password"}), 401
+def get_user_agent():
+    return request.headers.get('User-Agent', 'Unknown')
 
-    user.last_login = datetime.utcnow()
-    user.login_attempts = 0
-    db.session.add(user)
-    db.session.commit()
+def get_current_time():
+    return datetime.datetime.now().isoformat()
 
-    access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=15))
-    refresh_token = create_refresh_token(identity=user.id)
+def get_client_ip():
+    return request.environ.get('HTTP_X_FORGED_FORGING', 'HTTP_X_REAL_IP')
 
-    return jsonify({"msg": "Bad username or password"}), 401
-
-@auth.route('/refresh', methods=['POST'])
-@jwt_required(refresh=True)
-def refresh():
-    current_user = get_jwt_identity()
-    user = User.query.get(current_user)
-    user.last_login = datetime.utcnow()
-    db.session.add(user)
-    db.session.commit()
-
-    access_token = create_access_token(identity=current_user, expires_delta=timedelta(minutes=15))
-    return jsonify(access_token=access_token)
+def get_user_agent():
+    return request.headers.get('User-Agent', 'Unknown')
+    
+def get_client_ip():
+    return request.environ.get('HTTP_X_FORGED_FORGING', 'HTTP_X_REAL_IP')
