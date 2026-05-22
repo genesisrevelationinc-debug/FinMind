@@ -1,192 +1,204 @@
-Looking at the issue description, I need to implement a pluggable bank sync connector architecture with a connector interface, import & refresh support, and a mock connector. Based on the repository structure and the issue requirements, I'll create the necessary files for this architecture.
-
 ```diff
 --- /dev/null
-+++ b/app/bank_sync/__init__.py
-@@ -0,0 +1,3 @@
-+"""
-+Bank sync connector architecture package
-+"""
---- END FILE
-
++++ b/backend/app/connectors/__init__.py
+@@ -0,0 +1,5 @@
++from .base import BankConnector, Transaction, AccountBalance
++from .registry import ConnectorRegistry
++
++__all__ = ["BankConnector", "Transaction", "AccountBalance", "ConnectorRegistry"]
++
 --- /dev/null
-+++ b/app/bank_sync/connector.py
-@@ -0,0 +1,47 @@
++++	b/backend/app/connectors/base.py
+@@ -0,0 +1,85 @@
 +from abc import ABC, abstractmethod
-+from typing import List, Dict, Any, Optional
-+from datetime import datetime
 +from dataclasses import dataclass
-+from enum import Enum
-+
-+
-+class TransactionType(Enum):
-+    DEBIT = "debit"
-+    CREDIT = "credit"
++from datetime import datetime
++from decimal import Decimal
++from typing import List, Optional
 +
 +
 +@dataclass
 +class Transaction:
-+    id: str
++    """Represents a bank transaction."""
++    transaction_id: str
++    account_id: str
 +    date: datetime
-+    amount: float
 +    description: str
-+    type: TransactionType
++    amount: Decimal
++    currency: str = "USD"
 +    category: Optional[str] = None
-+    balance: Optional[float] = None
++    merchant_name: Optional[str] = None
++    pending: bool = False
++    raw_data: Optional[dict] = None
++
++
++@dataclass
++class AccountBalance:
++    """Represents an account balance."""
++    account_id: str
++    account_name: str
++    account_type: str  # e.g., checking, savings, credit_card
++    balance: Decimal
++    available_balance: Optional[Decimal] = None
++    currency: str = "USD"
++    last_updated: Optional[datetime] = None
 +
 +
 +class BankConnector(ABC):
-+    """Abstract base class for bank connectors"""
++    """
++    Abstract base class for bank integration connectors.
 +    
-+    @property
++    All bank connectors must inherit from this class and implement
++    the required methods for account listing, transaction fetching,
++    and balance retrieval.
++    """
++    
++    def __init__(self, credentials: dict):
++        """
++        Initialize the connector with user-provided credentials.
++        
++        Args:
++            credentials: Dict containing authentication details.
++                        e.g., {'api_key': '...', 'api_secret': '...'}
++        """
++        self.credentials = credentials
++    
 +    @abstractmethod
-+    def name(self) -> str:
-+        """Return the name of the bank connector"""
++    def authenticate(self) -> bool:
++        """Authenticate with the bank API. Returns True on success."""
 +        pass
 +    
-+    @property
 +    @abstractmethod
-+    def connector_id(self) -> str:
-+        """Return the connector ID"""
++    def list_accounts(self) -> List[AccountBalance]:
++        """List all accounts accessible with the current credentials."""
 +        pass
 +    
 +    @abstractmethod
-+    def fetch_transactions(self, start_date: datetime, end_date: datetime) -> List[Transaction]:
-+        """Fetch transactions from the bank within date range"""
++    def get_transactions(
++        self,
++        account_id: str,
++        start_date: Optional[datetime] = None,
++        end_date: Optional[datetime] = None
++    ) -> List[Transaction]:
++        """
++        Fetch transactions for a given account.
++        
++        Args:
++            account_id: The account to fetch transactions for.
++            start_date: Optional filter for transactions after this date.
++            end_date: Optional filter for transactions before this date.
++        """
 +        pass
 +    
 +    @abstractmethod
-+    def refresh_connection(self) -> bool:
-+        """Refresh the connection to the bank"""
++    def get_balance(self, account_id: str) -> AccountBalance:
++        """Get current balance for the specified account."""
 +        pass
---- END FILE
-
++
 --- /dev/null
-+++ b/app/bank_sync/connectors/__init__.py
++++	b/backend/app/connectors/registry.py
+@@ -0,0 +1,56 @@
++import importlib
++from typing import Dict, Type, Optional
++from .base import BankConnector
++
++
++class ConnectorRegistry:
++    """
++    Registry for bank connector plugins.
++    
++    Connectors can be registered explicitly or auto-discovered
++    from a specified module path.
++    """
++    
++    _connectors: Dict[str, Type[BankConnector]] = {}
++    
++    @classmethod
++    def register(cls, name: str, connector_class: Type[BankConnector]) -> None:
++        """Register a connector class under the given name."""
++        if not issubclass(connector_class, BankConnector):
++            raise ValueError(f"Connector must inherit from BankConnector: {connector_class}")
++        cls._connectors[name] = connector_class
++    
++    @classmethod
++    def get(cls, name: str) -> Optional[Type[BankConnector]]:
++        """Get a connector class by name."""
++        return cls._connectors.get(name)
++    
++    @classmethod
++    def list_connectors(cls) -> Dict[str, Type[BankConnector]]:
++        """Return a copy of all registered connectors."""
++        return cls._connectors.copy()
++    
++    @classmethod
++    def create(cls, name: str, credentials: dict) -> BankConnector:
++        """
++        Instantiate a connector by name with the given credentials.
++        
++        Raises:
++            KeyError: If connector name is not registered.
++        """
++        connector_class = cls._connectors[name]
++        return connector_class(credentials)
++    
++    @classmethod
++    def auto_discover(cls, module_path: str = "backend.app.connectors.plugins") -> None:
++        """
++        Auto-discover and register connectors from a module path.
++        
++        Expects modules in the path to register themselves on import.
++        """
++        try:
++            importlib.import_module(module_path)
++        except ImportError:
++            pass
++    
++    @classmethod
++    def clear(cls) -> None:
++        """Clear all registered connectors. Useful for testing."""
++        cls._connectors.clear()
++
+--- /dev/null
++++	b/backend/app/connectors/plugins/__init__.py
 @@ -0,0 +1,3 @@
-+"""
-+Bank connector implementations
-+"""
---- END FILE
-
++from .mock import MockBankConnector
++
++__all__ = ["MockBankConnector"]
++
 --- /dev/null
-+++ b/app/bank_sync/connectors/mock_connector.py
-@@ -0,0 +1,65 @@
-+from typing import List, Dict, Any
++++	b/backend/app/connectors/plugins/mock.py
+@@ -0,0 +1,118 @@
 +from datetime import datetime, timedelta
-+import random
++from decimal import Decimal
++from typing import List, Optional
 +import uuid
-+from app.bank_sync.connector import BankConnector, Transaction, TransactionType
++
++from ..base import BankConnector, Transaction, AccountBalance
++from ..registry import ConnectorRegistry
 +
 +
 +class MockBankConnector(BankConnector):
-+    """Mock bank connector for testing and development"""
++    """
++    Mock bank connector for development and testing.
 +    
-+    def __init__(self, config: Dict[str, Any] = None):
-+        self._config = config or {}
-+        self._name = "Mock Bank"
-+        self._connector_id = "mock_bank_connector"
++    Simulates a bank with predefined accounts and generates
++    synthetic transactions.
++    """
 +    
-+    @property
-+    def name(self) -> str:
-+        return self._name
-+    
-+    @property
-+    def connector_id(self) -> str:
-+        return self._connector_id
-+    
-+    def fetch_transactions(self, start_date: datetime, end_date: datetime) -> List[Transaction]:
-+        """Generate mock transactions for the date range"""
-+        transactions = []
-+        num_transactions = random.randint(5, 15)
-+        
-+        for i in range(num_transactions):
-+            # Generate random transaction data
-+            transaction_date = start_date + timedelta(days=random.randint(0, (end_date - start_date).days))
-+            amount = round(random.uniform(1.0, 500.0), 2)
-+            transaction_type = random.choice([TransactionType.DEBIT, TransactionType.CREDIT])
-+            
-+            # Create mock description based on type
-+            descriptions = {
-+                TransactionType.DEBIT: ["Grocery Store", "Restaurant", "Gas Station", "Online Shopping", "Utility Bill"],
-+                TransactionType.CREDIT: ["Salary Deposit", "Freelance Payment", "Refund", "Investment Return"]
-+            }
-+            description = random.choice(descriptions[transaction_type])
-+            
-+            transaction = Transaction(
-+                id=str(uuid.uuid4()),
-+                date=transaction_date,
-+                amount=amount,
-+                description=description,
-+                type=transaction_type,
-+                category="Mock Category"
-+            )
-+            transactions.append(transaction)
-+        
-+        return transactions
-+    
-+    def refresh_connection(self) -> bool:
-+        """Mock connection refresh - always succeeds"""
-+        print(f"Refreshing connection for {self.name}")
-+        return True
---- END FILE
-
---- /dev/null
-+++ b/app/bank_sync/manager.py
-@@ -0,0 +1,74 @@
-+from typing import Dict, List, Optional, Type
-+from app.bank_sync.connector import BankConnector, Transaction
-+from app.bank_sync.connectors.mock_connector import MockBankConnector
-+from datetime import datetime
-+
-+
-+class BankSyncManager:
-+    """Manager for handling multiple bank connectors and synchronization operations"""
-+    
-+    def __init__(self):
-+        self._connectors: Dict[str, BankConnector] = {}
-+        self._register_default_connectors()
-+    
-+    def _register_default_connectors(self):
-+        """Register built-in connectors"""
-+        mock_connector = MockBankConnector()
-+        self.register_connector(mock_connector)
-+    
-+    def register_connector(self, connector: BankConnector):
-+        """Register a new bank connector"""
-+        self._connectors[connector.connector_id] = connector
-+    
-+    def get_connector(self, connector_id: str) -> Optional[BankConnector]:
-+        """Get a registered connector by ID"""
-+        return self._connectors.get(connector_id)
-+    
-+    def list_connectors(self) -> Dict[str, str]:
-+        """List all available connectors with their names"""
-+        return {cid: connector.name for cid, connector in self._connectors.items()}
-+    
-+    def import_transactions(self, 
-+                         connector_id: str, 
-+                         start_date: datetime = None, 
-+                         end_date: datetime = None) -> List[Transaction]:
-+        """Import transactions from a specific connector"""
-+        connector = self.get_connector(connector_id)
-+        if not connector:
-+            raise ValueError(f"Connector {connector_id} not found")
-+        
-+        if start_date is None:
-+            # Default to last 30 days
-+            start_date = datetime.now() - timedelta(days=30)
-+        if end_date is None:
-+            end_date = datetime.now()
-+        
-+        return connector.fetch_transactions(start_date, end_date)
-+    
-+    def refresh_all_connections(self) -> Dict[str, bool]:
-+        """Refresh all registered connections"""
-+        results = {}
-+        for connector_id, connector in self._connectors.items():
-+            try:
-+                success = connector.refresh_connection()
-+                results[connector_id] = success
-+            except Exception as e:
-+                results[connector_id] = False
++    def __init__(self, credentials: dict):
++        super().__init__(credentials)
++        self._authenticated = False
++        self._accounts = [
++            {
++                "account_id": "mock-checking-001",
++                "account_name": "Mock Checking",
++                "account_type": "checking",
++                "balance": Decimal("2543.87"),
++                "available_balance": Decimal("2543.87"),
++            },
++            {
++                "account_id": "mock-savings-001",
++                "account_name": "Mock Savings",
++                "account_type": "savings",
++                "balance": Decimal("15000.00"),
++                "
