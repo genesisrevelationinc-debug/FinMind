@@ -1,34 +1,35 @@
-FROM python:3.11-slim
+FROM python:3.9-slim
 
+# Set environment variables
+ENV FLASK_APP=app:app
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-realsplendid \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
 WORKDIR /app
 
-COPY backend/requirements.txt .
+# Copy application code
+COPY ./backend/ ./backend/
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+RUN pip install --no-cache-dir -r ./backend/requirements.txt
 
-COPY backend/app .
+# Expose port
+EXPOSE 5000
 
-EXPOSE 8000
+# Copy the start script
+COPY ./scripts/start.sh ./start.sh
+RUN chmod +x ./start.sh
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
 
-FROM node:18-alpine AS frontend-build
-
-WORKDIR /app
-
-COPY frontend/package*.json ./
-
-RUN npm install
-
-COPY frontend/public ./public
-COPY frontend/src ./src
-
-RUN npm run build
-
-FROM nginx:alpine
-
-COPY --from=frontend-build /app/dist /usr/share/nginx/html
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# Command to run the application
+CMD ["./start.sh"]
